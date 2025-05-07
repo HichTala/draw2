@@ -27,6 +27,7 @@ class Draw:
 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+        #TODO: Use huggingface hub to download the model
         if not os.path.isfile(self.configs["yolo_path"]):
             download_file(self.configs["hf_yolo"], self.configs["yolo_path"])
 
