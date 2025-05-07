@@ -4,6 +4,7 @@ import os
 import cv2
 import numpy as np
 import torch
+from PIL import Image
 
 import tools
 from build_models import build_regression, build_classification
@@ -20,7 +21,7 @@ class Draw:
 
         self.card_types = self.configs['card_types']
         model_regression = build_regression(os.path.join(self.configs['trained_models'], 'yolo_ygo.pt'))
-        self.model_classification_dict, self.classes_dict, self.deck_card_ids = build_classification(
+        self.classifier, self.deck_card_ids = build_classification(
             card_types=self.card_types,
             configs=self.configs,
             data_path=self.configs['data_path'],
@@ -76,14 +77,12 @@ class Draw:
 
                 if contours != ():
                     contour = contours[np.array(list(map(cv2.contourArea, contours))).argmax()]
+                    box_txt, txt_aspect_ratio = tools.get_txt(contour)
 
-                    rect = cv2.minAreaRect(contour)
-                    box_txt = cv2.boxPoints(rect)
-                    box_txt = np.intp(box_txt)
-
-                    dx = max(box_txt[:, 0]) - min(box_txt[:, 0])
-                    dy = max(box_txt[:, 1]) - min(box_txt[:, 1])
-                    txt_aspect_ratio = max(dx, dy) / min(dx, dy)
+                    max_txt_aspect_ratio = 5
+                    min_txt_aspect_ratio = 1
+                    max_txt_area = 11000
+                    min_txt_area = 6000
 
                     # if self.debug_mode:
                     #     cv2.putText(image, "text area :" + str(area), (x1, y1 + (y2 - y1) // 2),
@@ -92,61 +91,44 @@ class Draw:
                     #                 (255, 255, 255),
                     #                 2)
 
-                    if 2.5 < txt_aspect_ratio < 5 and 6000 < cv2.contourArea(box_txt) < 11000:
-                        box_artwork, box_txt = src.tools.extract_artwork(contour, x2 - x1, y2 - y1)
-                        if box_artwork is None:
+                    if (
+                            (min_txt_aspect_ratio < txt_aspect_ratio < max_txt_aspect_ratio)
+                            and
+                            (min_txt_area < cv2.contourArea(box_txt) < max_txt_area)
+                    ):
+                        rotation = tools.get_rotation(boxes=result.obb.xywhr[nbox], box_txt=box_txt)
+                        if rotation is None:
                             break
 
-                        if self.debug_mode:
-                            cv2.putText(image, "area threshold :" + str(cv2.contourArea(box_artwork)),
-                                        (x1, y1 + (y2 - y1) // 4),
-                                        cv2.FONT_HERSHEY_PLAIN,
-                                        1.0,
-                                        (255, 255, 255),
-                                        2)
+                        if rotation != 0:
+                            roi = cv2.rotate(roi, rotation)
 
-                        if cv2.contourArea(box_artwork) > self.configs['area_threshold']:
+                        roi = cv2.cvtColor(roi, cv2.COLOR_BGR2RGB)
+                        roi = Image.fromarray(roi)
 
-                            angle = src.tools.get_angle(box_artwork)
-                            artwork = src.tools.crop_min_area_rect(
-                                roi.copy(),
-                                box_artwork,
-                                angle
-                            )
+                        # if self.debug_mode:
+                        #     cv2.putText(image, "area threshold :" + str(cv2.contourArea(box_artwork)),
+                        #                 (x1, y1 + (y2 - y1) // 4),
+                        #                 cv2.FONT_HERSHEY_PLAIN,
+                        #                 1.0,
+                        #                 (255, 255, 255),
+                        #                 2)
 
-                            if artwork.shape[0] != 0 and artwork.shape[1] != 0:
-                                cv2.imwrite('./ROI/artwork.png', artwork)
-                                card_type = src.tools.get_card_type(
-                                    roi=roi,
-                                    card_types=self.card_types,
-                                    box_artwork=box_artwork,
-                                    box_txt=box_txt,
-                                    configs=self.configs
-                                )
+                        output = self.classifier(roi)
 
-                                input_image = src.tools.pil_loader('./ROI/artwork.png')
-                                transform = src.tools.build_transform()
-                                input_image = transform(input_image)
-
-                                model_classification = self.model_classification_dict[card_type]
-                                model_classification.eval()
-
-                                input_tensor = input_image.unsqueeze(0).to('cuda')
-                                output = model_classification(input_tensor)
-
-                                _, indices = torch.sort(output, descending=True)
-                                for k, i in enumerate(indices[0]):
-                                    if i in self.deck_card_ids[card_type]:
-                                        predictions.append((self.classes_dict[card_type][i], card_type))
-                                        cv2.putText(image, self.classes_dict[card_type][i], (x1, y1),
-                                                    cv2.FONT_HERSHEY_PLAIN,
-                                                    1.0,
-                                                    (255, 255, 255),
-                                                    2)
-                                        break
-                                cv2.rectangle(image, (x1, y1), (x2, y2), color=(255, 152, 119), thickness=2)
-                                cv2.drawContours(roi, [box_txt], 0, (152, 255, 119), 2)
-                                cv2.drawContours(roi, [box_artwork], 0, (119, 152, 255), 2)
+                        # _, indices = torch.sort(output, descending=True)
+                        # for k, i in enumerate(indices[0]):
+                        #     if i in self.deck_card_ids[card_type]:
+                        #         predictions.append((self.classes_dict[card_type][i], card_type))
+                        #         cv2.putText(image, self.classes_dict[card_type][i], (x1, y1),
+                        #                     cv2.FONT_HERSHEY_PLAIN,
+                        #                     1.0,
+                        #                     (255, 255, 255),
+                        #                     2)
+                        #         break
+                        # cv2.rectangle(image, (x1, y1), (x2, y2), color=(255, 152, 119), thickness=2)
+                        # cv2.drawContours(roi, [box_txt], 0, (152, 255, 119), 2)
+                        # cv2.drawContours(roi, [box_artwork], 0, (119, 152, 255), 2)
         if display:
             return image
         else:
