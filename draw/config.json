@@ -1,0 +1,11 @@
+{
+  "yolo_path": "",
+  "hf_yolo": "https://huggingface.co/HichTala/draw2/blob/main/yolo_ygo.pt",
+
+  "max_aspect_ratio": 1.90,
+  "min_aspect_ratio": 1.00,
+  "max_txt_aspect_ratio": 5,
+  "min_txt_aspect_ratio": 1,
+  "max_txt_area": 11000,
+  "min_txt_area": 6000
+}
