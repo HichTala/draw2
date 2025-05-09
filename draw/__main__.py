@@ -11,7 +11,7 @@ from draw.draw import Draw
 def parse_command_line():
     parser = argparse.ArgumentParser('Detecting and Recognizing a Wide Range of Yu-Gi-Oh! Cards', add_help=True)
 
-    parser.add_argument('--source', type=str,
+    parser.add_argument('--source', default='0', type=str,
                         help="Source to use for processing refer to github.com/HichTala/draw2 for more details")
 
     parser.add_argument("--save", nargs="?", const="output",
@@ -43,7 +43,7 @@ def save(is_image, outputs, video_writer, save_path):
         video_writer.write(outputs['image'])
 
 
-def display_card(outputs, counts, displayed):
+def display_card(outputs, counts, displayed, dataset):
     for label in outputs['predictions']:
         if label not in counts:
             counts[label] = 0
@@ -53,10 +53,8 @@ def display_card(outputs, counts, displayed):
         if count > 60:
             if label not in displayed:
                 displayed[label] = 6
-                path = os.path.join("dataset", label)
-                filename = os.listdir(path)[0]
 
-                image = Image.open(os.path.join(path, filename))
+                image = dataset[label]["image"]
                 image.show(title="draw2 - Card")
             else:
                 displayed[label] -= 1
@@ -67,7 +65,6 @@ def display_card(outputs, counts, displayed):
 
 def main(args):
     draw = Draw(
-        config="./configs/config.json",
         source=args.source,
         deck_list=args.deck_list,
         debug=False
@@ -89,7 +86,7 @@ def main(args):
                                        (first_frame.shape[0], first_frame.shape[1]))
 
     if args.display_card:
-        # TODO put those as arguments in side draw class
+        # TODO put those as arguments inside draw class
         counts = {}
         displayed = {}
 
@@ -104,7 +101,7 @@ def main(args):
                 save(is_image, outputs, video_writer, save_path)
 
             if args.display_card:
-                display_card(outputs, counts, displayed)
+                display_card(outputs, counts, displayed, draw.dataset)
 
         if args.save and not is_image:
             video_writer.release()

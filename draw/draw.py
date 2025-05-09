@@ -6,6 +6,8 @@ import numpy as np
 import requests
 import torch
 from PIL import Image
+from datasets import load_dataset
+from huggingface_hub import hf_hub_download
 from transformers import AutoImageProcessor, pipeline
 from ultralytics import YOLO
 
@@ -19,19 +21,19 @@ def download_file(url, destination):
 
 
 class Draw:
-    def __init__(self, config, source, deck_list=None, debug=False):
-        with open(config, "rb") as f:
-            self.configs = json.load(f)
-        with open(deck_list) as f:
-            self.deck_list = [line.rstrip() for line in f.readlines()]
+    def __init__(self, source, deck_list=None, debug=False):
+        if deck_list is not None:
+            with open(deck_list) as f:
+                self.deck_list = [line.rstrip() for line in f.readlines()]
 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-        #TODO: Use huggingface hub to download the model
-        if not os.path.isfile(self.configs["yolo_path"]):
-            download_file(self.configs["hf_yolo"], self.configs["yolo_path"])
+        config = hf_hub_download(repo_id="HichTala/draw2", filename="draw_config.json")
+        with open(config, "rb") as f:
+            self.configs = json.load(f)
+        yolo_path = hf_hub_download(repo_id="HichTala/draw2", filename="ygo_yolo.pt")
 
-        model_regression = YOLO(self.configs["yolo_path"])
+        model_regression = YOLO(yolo_path)
         self.results = model_regression.track(
             source=source,
             show_labels=False,
@@ -48,6 +50,12 @@ class Draw:
             image_processor=image_processor,
             device_map=device
         )
+
+        self.dataset = load_dataset("HichTala/ygoprodeck", split="train")
+        labels = self.dataset.features["label"].names
+        self.label2id = dict()
+        for i, label in enumerate(labels):
+            self.label2id[label] = str(i)
 
         self.debug_mode = debug
 
