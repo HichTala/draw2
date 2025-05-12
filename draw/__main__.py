@@ -2,8 +2,10 @@ import argparse
 import os
 
 import cv2
+import mss
 import numpy as np
 from PIL import Image
+from matplotlib import pyplot as plt
 
 from draw.draw import Draw
 
@@ -32,8 +34,7 @@ def parse_command_line():
 
 
 def show(outputs):
-    image = Image.fromarray(np.asarray(outputs['image'])[..., ::-1])
-    image.show(title="draw2 - Stream")
+    cv2.imshow('Stream', outputs['image'])
 
 
 def save(is_image, outputs, video_writer, save_path):
@@ -67,7 +68,7 @@ def main(args):
     draw = Draw(
         source=args.source,
         deck_list=args.deck_list,
-        debug=False
+        debug=True
     )
 
     is_image = False
@@ -106,7 +107,9 @@ def main(args):
         if args.save and not is_image:
             video_writer.release()
     except KeyboardInterrupt:
-        video_writer.release()
+        cv2.destroyAllWindows()
+        if args.save and not is_image:
+            video_writer.release()
 
 
 if __name__ == '__main__':

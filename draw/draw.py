@@ -22,6 +22,7 @@ def download_file(url, destination):
 
 class Draw:
     def __init__(self, source, deck_list=None, debug=False):
+        self.decklist = None
         if deck_list is not None:
             with open(deck_list) as f:
                 self.deck_list = [line.rstrip() for line in f.readlines()]
@@ -43,15 +44,18 @@ class Draw:
             verbose=False
         )
 
-        image_processor = AutoImageProcessor.from_pretrained("google/vit-base-patch16-224-in21k")
+        image_processor = AutoImageProcessor.from_pretrained(
+            "google/vit-base-patch16-224-in21k",
+            use_fast=True
+        )
         self.classifier = pipeline(
             "image-classification",
-            model="HichTala/draw",
+            model="HichTala/draw2",
             image_processor=image_processor,
             device_map=device
         )
 
-        self.dataset = load_dataset("HichTala/ygoprodeck", split="train")
+        self.dataset = load_dataset("HichTala/ygoprodeck-dataset", split="train")
         labels = self.dataset.features["label"].names
         self.label2id = dict()
         for i, label in enumerate(labels):
@@ -62,13 +66,18 @@ class Draw:
     def process(self, result, show=False, display=False):
         outputs = {}
 
-        if show:
-            outputs['predictions'] = []
         if display:
+            outputs['predictions'] = []
+        if show:
             outputs['image'] = result.orig_img.copy()
+        breakpoint()
 
         for nbox, boxe in enumerate(result.obb.xyxyxyxyn):
-            x1, y1, _, _, x2, y2, _, _ = boxe.cpu().numpy().astype(int)
+            boxe = np.float32(
+                [[b[0] * result.orig_img.shape[1], b[1] * result.orig_img.shape[0]] for b in boxe.cpu()]
+            )
+            obb = np.intp(boxe)
+            xy1, _, xy2, _ = obb
 
             max_aspect_ratio = self.configs['max_aspect_ratio']
             min_aspect_ratio = self.configs['min_aspect_ratio']
@@ -79,16 +88,14 @@ class Draw:
             )
 
             if self.debug_mode and show:
-                cv2.putText(outputs['image'], "aspect ratio :" + str(aspect_ratio), (x1, y2),
+                cv2.drawContours(outputs['image'], [obb], 0, (119, 152, 255), 2)
+                cv2.putText(outputs['image'], "aspect ratio :" + str(aspect_ratio), (xy1[0], xy2[1]),
                             cv2.FONT_HERSHEY_PLAIN,
                             1.0,
                             (255, 255, 255),
                             2)
 
             if max_aspect_ratio > aspect_ratio > min_aspect_ratio:
-                boxe = np.float32(
-                    [[b[0] * outputs['image'].shape[1], b[1] * outputs['image'].shape[0]] for b in boxe.cpu()]
-                )
                 output_pts = np.float32([
                     [224, 224],
                     [224, 0],
@@ -97,7 +104,7 @@ class Draw:
                 ])
                 perspective_transform = cv2.getPerspectiveTransform(boxe, output_pts)
                 roi = cv2.warpPerspective(
-                    outputs['image'], perspective_transform, (224, 224), flags=cv2.INTER_LINEAR
+                    result.orig_img, perspective_transform, (224, 224), flags=cv2.INTER_LINEAR
                 )
                 contours = utils.extract_contours(roi)
 
@@ -115,14 +122,14 @@ class Draw:
                     if self.debug_mode and show:
                         cv2.putText(outputs['image'],
                                     f"text area : {str(text_area)}",
-                                    (x1, y1 + (y2 - y1) // 2),
+                                    (xy1[0], xy1[1] + (xy2[1] - xy1[1]) // 2),
                                     cv2.FONT_HERSHEY_PLAIN,
                                     1.0,
                                     (255, 255, 255),
                                     2)
                         cv2.putText(outputs['image'],
                                     f"text aspect ratio : {str(txt_aspect_ratio)}",
-                                    (x1, y1 + (y2 - y1) // 4),
+                                    (xy1[0], xy1[1] + (xy2[1] - xy1[1]) // 4),
                                     cv2.FONT_HERSHEY_PLAIN,
                                     1.0,
                                     (255, 255, 255),
@@ -145,14 +152,28 @@ class Draw:
 
                         output = self.classifier(roi)
 
-                        for label in output[:]['label']:
-                            if label.split('-')[-1] in self.deck_list:
-                                outputs['predictions'].append(label)
-                                cv2.putText(outputs['image'], ' '.join(label.split('-')[:-2]), (x1, y1),
+                        if self.decklist is None:
+                            if display:
+                                outputs['predictions'].append(output[0]['label'])
+                            if show:
+                                cv2.putText(outputs['image'], ' '.join(output[0]['label'].split('-')[:-2]),
+                                            (xy1[0], xy1[1]),
                                             cv2.FONT_HERSHEY_PLAIN,
                                             1.0,
                                             (255, 255, 255),
                                             2)
-                                break
-                        cv2.rectangle(outputs['image'], (x1, y1), (x2, y2), color=(255, 152, 119), thickness=2)
+                        else:
+                            for label in output[:]['label']:
+                                if label.split('-')[-1] in self.deck_list:
+                                    if display:
+                                        outputs['predictions'].append(label)
+                                    if show:
+                                        cv2.putText(outputs['image'], ' '.join(label.split('-')[:-2]), (xy1[0], xy1[1]),
+                                                    cv2.FONT_HERSHEY_PLAIN,
+                                                    1.0,
+                                                    (255, 255, 255),
+                                                    2)
+                                    break
+                        cv2.rectangle(outputs['image'], (xy1[0], xy1[1]), (xy2[0], xy2[0]), color=(255, 152, 119),
+                                      thickness=2)
         return outputs
