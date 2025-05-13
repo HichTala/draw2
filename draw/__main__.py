@@ -1,5 +1,6 @@
 import argparse
 import os
+import platform
 
 import cv2
 import mss
@@ -33,8 +34,13 @@ def parse_command_line():
     return parser.parse_args()
 
 
-def show(outputs):
-    cv2.imshow('Stream', outputs['image'])
+def show(im, p="draw2"):
+    """Display an image in a window."""
+    if platform.system() == "Linux":
+        cv2.namedWindow(p, cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO)  # allow window resize (Linux)
+        cv2.resizeWindow(p, im.shape[1], im.shape[0])  # (width, height)
+    cv2.imshow(p, im)
+    cv2.waitKey(1)  # 1 millisecond
 
 
 def save(is_image, outputs, video_writer, save_path):
@@ -96,7 +102,8 @@ def main(args):
             outputs = draw.process(result, show=args.show)
 
             if args.show:
-                show(outputs)
+                show(outputs['image'])
+                # result.show()
 
             if args.save:
                 save(is_image, outputs, video_writer, save_path)

@@ -70,7 +70,7 @@ class Draw:
             outputs['predictions'] = []
         if show:
             outputs['image'] = result.orig_img.copy()
-        breakpoint()
+        # breakpoint()
 
         for nbox, boxe in enumerate(result.obb.xyxyxyxyn):
             boxe = np.float32(
