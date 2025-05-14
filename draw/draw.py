@@ -66,9 +66,9 @@ class Draw:
     def process(self, result, show=False, display=False):
         outputs = {}
 
-        if display:
+        if display or self.debug_mode:
             outputs['predictions'] = []
-        if show:
+        if show or self.debug_mode:
             outputs['image'] = result.orig_img.copy()
 
         for nbox, boxe in enumerate(result.obb.xyxyxyxyn):
@@ -160,6 +160,8 @@ class Draw:
                         if self.decklist is None:
                             if display:
                                 outputs['predictions'].append(output[0]['label'])
+                            if self.debug_mode:
+                                outputs['predictions'].append(output)
                             if show:
                                 cv2.putText(outputs['image'], ' '.join(output[0]['label'].split('-')[:-2]),
                                             (xy1[0], xy1[1]),

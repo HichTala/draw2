@@ -50,7 +50,7 @@ def save(is_image, outputs, video_writer, save_path):
         video_writer.write(outputs['image'])
 
 
-def display_card(outputs, counts, displayed, dataset):
+def display_card(outputs, counts, displayed, dataset, label2id):
     for label in outputs['predictions']:
         if label not in counts:
             counts[label] = 0
@@ -60,9 +60,9 @@ def display_card(outputs, counts, displayed, dataset):
         if count > 60:
             if label not in displayed:
                 displayed[label] = 6
-
-                image = dataset[label]["image"]
-                image.show(title="draw2 - Card")
+                image = dataset[int(label2id[label])]["image"]
+                image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+                show(image, p="draw2 - Card")
             else:
                 displayed[label] -= 1
                 if displayed[label] == 0:
@@ -74,7 +74,7 @@ def main(args):
     draw = Draw(
         source=args.source,
         deck_list=args.deck_list,
-        debug=True
+        # debug=True
     )
 
     is_image = False
@@ -97,9 +97,14 @@ def main(args):
         counts = {}
         displayed = {}
 
+        labels = draw.dataset.features["label"].names
+        label2id = dict()
+        for i, label in enumerate(labels):
+            label2id[label] = str(i)
+
     try:
         for result in draw.results:
-            outputs = draw.process(result, show=args.show)
+            outputs = draw.process(result, show=args.show, display=args.display_card)
 
             if args.show:
                 show(outputs['image'])
@@ -109,7 +114,10 @@ def main(args):
                 save(is_image, outputs, video_writer, save_path)
 
             if args.display_card:
-                display_card(outputs, counts, displayed, draw.dataset)
+                display_card(outputs, counts, displayed, draw.dataset, label2id)
+
+            if draw.debug_mode and outputs['predictions'] != []:
+                print(outputs['predictions'])
 
         if args.save and not is_image:
             video_writer.release()
