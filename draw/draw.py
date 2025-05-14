@@ -70,7 +70,6 @@ class Draw:
             outputs['predictions'] = []
         if show:
             outputs['image'] = result.orig_img.copy()
-        # breakpoint()
 
         for nbox, boxe in enumerate(result.obb.xyxyxyxyn):
             boxe = np.float32(
@@ -106,7 +105,13 @@ class Draw:
                 roi = cv2.warpPerspective(
                     result.orig_img, perspective_transform, (224, 224), flags=cv2.INTER_LINEAR
                 )
-                contours = utils.extract_contours(roi)
+                contours = utils.extract_contours(
+                    roi,
+                    d=self.configs["bilateral_filter_d"],
+                    sigma_color=self.configs["bilateral_filter_sigma_color"],
+                    sigma_space=self.configs["bilateral_filter_sigma_space"],
+                    thresh=self.configs["txt_box_contour_threshold"]
+                )
 
                 if contours != ():
                     contour = contours[np.array(list(map(cv2.contourArea, contours))).argmax()]
@@ -174,6 +179,5 @@ class Draw:
                                                     (255, 255, 255),
                                                     2)
                                     break
-                        cv2.rectangle(outputs['image'], (xy1[0], xy1[1]), (xy2[0], xy2[0]), color=(255, 152, 119),
-                                      thickness=2)
+                        cv2.drawContours(outputs['image'], [obb], 0, (255, 152, 119), 2)
         return outputs

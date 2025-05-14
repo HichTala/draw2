@@ -19,11 +19,11 @@ def clean_deck_list(deck_list, classes):
     return list(set(deck_card_id))
 
 
-def extract_contours(roi):
+def extract_contours(roi, d, sigma_color, sigma_space, thresh):
     gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
-    gray = cv2.bilateralFilter(gray, 11, 17, 17)
+    gray = cv2.bilateralFilter(gray, d, sigma_color, sigma_space)
     equalized = cv2.equalizeHist(gray)
-    _, thresh = cv2.threshold(equalized, 140, 255, cv2.THRESH_BINARY)
+    _, thresh = cv2.threshold(equalized, thresh, 255, cv2.THRESH_BINARY)
 
     kernel = np.ones((7, 7), np.uint8)
     edged = cv2.erode(thresh, kernel, iterations=3)
