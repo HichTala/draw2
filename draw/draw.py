@@ -25,7 +25,7 @@ class Draw:
         self.decklist = None
         if deck_list is not None:
             with open(deck_list) as f:
-                self.deck_list = [line.rstrip() for line in f.readlines()]
+                self.decklist = [line.rstrip() for line in f.readlines()]
 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -155,7 +155,7 @@ class Draw:
                         roi = cv2.cvtColor(roi, cv2.COLOR_BGR2RGB)
                         roi = Image.fromarray(roi)
 
-                        output = self.classifier(roi)
+                        output = self.classifier(roi, top_k=15)
 
                         if self.decklist is None:
                             if display:
@@ -170,8 +170,9 @@ class Draw:
                                             (255, 255, 255),
                                             2)
                         else:
-                            for label in output[:]['label']:
-                                if label.split('-')[-1] in self.deck_list:
+                            for label in output:
+                                label = label['label']
+                                if label.split('-')[-1] in self.decklist:
                                     if display:
                                         outputs['predictions'].append(label)
                                     if show:

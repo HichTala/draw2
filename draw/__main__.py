@@ -70,7 +70,14 @@ def display_card(outputs, counts, displayed, dataset, label2id):
                     counts[label] = 0
 
 
+def get_deck_list(deck_list):
+    pass
+
+
 def main(args):
+    # if args.deck_list:
+    #     get_deck_list(args.deck_list)
+
     draw = Draw(
         source=args.source,
         deck_list=args.deck_list,
