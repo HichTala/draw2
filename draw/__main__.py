@@ -1,12 +1,18 @@
 import argparse
 import os
 import platform
+import shutil
+import time
+import urllib
+from pathlib import Path
 
 import cv2
 import mss
 import numpy as np
 from PIL import Image
 from matplotlib import pyplot as plt
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 
 from draw.draw import Draw
 
@@ -70,17 +76,94 @@ def display_card(outputs, counts, displayed, dataset, label2id):
                     counts[label] = 0
 
 
+def get_cache_dir():
+    return Path(os.getenv("XDG_CACHE_HOME", Path.home() / ".cache")) / "draw2"
+
+def clear_cache():
+    cache_dir = get_cache_dir()
+    if cache_dir.exists():
+        shutil.rmtree(cache_dir)
+
+def parse_deck_name(console_entry):
+    message = console_entry.get('message', '')
+    if not message or '\\"action\\":\\"Success\\"' not in message:
+        return ''
+    pattern = '\\"name\\":\\"'
+    start = message.find(pattern) + len(pattern)
+    message = message[start:]
+    pattern = '\\",'
+    end = message.find(pattern)
+    message = message[:end]
+    return message
+
+def parse_deck_list(message, dl):
+    pattern = '\\"serial_number\\":\\"'
+    if pattern not in message:
+        return dl
+    start = message.find(pattern) + len(pattern)
+    message = message[start:]
+    pattern = '\\",'
+    end = message.find(pattern)
+    serial_number = message[:end]
+    dl.append(serial_number)
+
+    message = message[end:]
+    return parse_deck_list(message, dl)
+
 def get_deck_list(deck_list):
-    pass
+    if os.path.isfile(deck_list):
+        return deck_list
+    elif deck_list.isdigit() and len(deck_list) == 8:
+        options = Options()
+        options.add_argument('--headless')
+        options.set_capability('goog:loggingPrefs', {'browser': 'ALL'})
+
+        url = f"https://www.duelingbook.com/deck?id={deck_list}"
+
+        driver = webdriver.Chrome(options=options)
+        driver.set_page_load_timeout(3)
+        driver.get(url)
+        time.sleep(1)
+
+        for entry in driver.get_log('browser'):
+            deck_name = parse_deck_name(console_entry=entry) or 'No name'
+            if deck_name == 'No name':
+                continue
+
+            cache_dir = get_cache_dir()
+            cache_dir.mkdir(parents=True, exist_ok=True)
+            local_path = cache_dir / f"{deck_name}.ydk"
+
+            list = parse_deck_list(entry, [])
+
+            with open(local_path, 'w') as f:
+                for line in list:
+                    f.write(f"{line}\n")
+            return local_path
+
+        return None
+    else:
+        cache_dir = get_cache_dir()
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        local_path = cache_dir / f"{deck_list.split("/")[-1]}.ydk"
+
+        if not local_path.exists():
+            print(f"Downloading {deck_list} to {local_path}")
+            urllib.request.urlretrieve(deck_list, local_path)
+        else:
+            print(f"Using cached: {local_path}")
+
+        return local_path
 
 
 def main(args):
-    # if args.deck_list:
-    #     get_deck_list(args.deck_list)
+    deck_list = None
+    if args.deck_list:
+        deck_list = get_deck_list(args.deck_list)
 
     draw = Draw(
         source=args.source,
-        deck_list=args.deck_list,
+        deck_list=deck_list,
         # debug=True
     )
 
@@ -126,12 +209,15 @@ def main(args):
             if draw.debug_mode and outputs['predictions'] != []:
                 print(outputs['predictions'])
 
+        cv2.destroyAllWindows()
         if args.save and not is_image:
             video_writer.release()
+        clear_cache()
     except KeyboardInterrupt:
         cv2.destroyAllWindows()
         if args.save and not is_image:
             video_writer.release()
+        clear_cache()
 
 
 if __name__ == '__main__':
