@@ -7,10 +7,7 @@ import urllib
 from pathlib import Path
 
 import cv2
-import mss
 import numpy as np
-from PIL import Image
-from matplotlib import pyplot as plt
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
@@ -79,10 +76,12 @@ def display_card(outputs, counts, displayed, dataset, label2id):
 def get_cache_dir():
     return Path(os.getenv("XDG_CACHE_HOME", Path.home() / ".cache")) / "draw2"
 
+
 def clear_cache():
     cache_dir = get_cache_dir()
     if cache_dir.exists():
         shutil.rmtree(cache_dir)
+
 
 def parse_deck_name(console_entry):
     message = console_entry.get('message', '')
@@ -95,6 +94,7 @@ def parse_deck_name(console_entry):
     end = message.find(pattern)
     message = message[:end]
     return message
+
 
 def parse_deck_list(message, dl):
     pattern = '\\"serial_number\\":\\"'
@@ -109,6 +109,7 @@ def parse_deck_list(message, dl):
 
     message = message[end:]
     return parse_deck_list(message, dl)
+
 
 def get_deck_list(deck_list):
     if os.path.isfile(deck_list):
@@ -134,10 +135,11 @@ def get_deck_list(deck_list):
             cache_dir.mkdir(parents=True, exist_ok=True)
             local_path = cache_dir / f"{deck_name}.ydk"
 
-            list = parse_deck_list(entry, [])
+            db_list = parse_deck_list(entry.get("message"), [])
+            db_list = list(set(db_list))
 
             with open(local_path, 'w') as f:
-                for line in list:
+                for line in db_list:
                     f.write(f"{line}\n")
             return local_path
 
