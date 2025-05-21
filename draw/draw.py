@@ -182,5 +182,5 @@ class Draw:
                                                     (255, 255, 255),
                                                     2)
                                     break
-                        cv2.drawContours(outputs['image'], [obb], 0, (255, 152, 119), 2)
+                        cv2.drawContours(outputs['image'], [obb], 0, (152, 255, 119), 2)
         return outputs
