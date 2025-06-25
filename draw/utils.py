@@ -1,7 +1,15 @@
 import math
+import os
+import platform
+import shutil
+import time
+import urllib
+from pathlib import Path
 
 import cv2
 import numpy as np
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 
 
 def clean_deck_list(deck_list, classes):
@@ -83,3 +91,104 @@ def get_rotation(boxes, box_txt):
             rotation = None
 
     return rotation
+
+
+def show(im, p="draw2"):
+    """Display an image in a window."""
+    if platform.system() == "Linux":
+        cv2.namedWindow(p, cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO)  # allow window resize (Linux)
+        cv2.resizeWindow(p, im.shape[1], im.shape[0])  # (width, height)
+    cv2.imshow(p, im)
+    cv2.waitKey(1)  # 1 millisecond
+
+
+def save(is_image, outputs, video_writer, save_path):
+    if is_image:
+        cv2.imwrite(f"{save_path}.png", outputs['image'])
+    else:
+        video_writer.write(outputs['image'])
+
+
+def get_cache_dir():
+    return Path(os.getenv("XDG_CACHE_HOME", Path.home() / ".cache")) / "draw2"
+
+
+def clear_cache():
+    cache_dir = get_cache_dir()
+    if cache_dir.exists():
+        shutil.rmtree(cache_dir)
+
+
+def parse_deck_name(console_entry):
+    message = console_entry.get('message', '')
+    if not message or '\\"action\\":\\"Success\\"' not in message:
+        return ''
+    pattern = '\\"name\\":\\"'
+    start = message.find(pattern) + len(pattern)
+    message = message[start:]
+    pattern = '\\",'
+    end = message.find(pattern)
+    message = message[:end]
+    return message
+
+
+def parse_deck_list(message, dl):
+    pattern = '\\"serial_number\\":\\"'
+    if pattern not in message:
+        return dl
+    start = message.find(pattern) + len(pattern)
+    message = message[start:]
+    pattern = '\\",'
+    end = message.find(pattern)
+    serial_number = message[:end]
+    dl.append(serial_number)
+
+    message = message[end:]
+    return parse_deck_list(message, dl)
+
+
+def get_deck_list(deck_list):
+    if os.path.isfile(deck_list):
+        return deck_list
+    elif deck_list.isdigit() and len(deck_list) == 8:
+        options = Options()
+        options.add_argument('--headless')
+        options.set_capability('goog:loggingPrefs', {'browser': 'ALL'})
+
+        url = f"https://www.duelingbook.com/deck?id={deck_list}"
+
+        driver = webdriver.Chrome(options=options)
+        driver.set_page_load_timeout(3)
+        driver.get(url)
+        time.sleep(1)
+
+        for entry in driver.get_log('browser'):
+            deck_name = parse_deck_name(console_entry=entry) or 'No name'
+            if deck_name == 'No name':
+                continue
+
+            cache_dir = get_cache_dir()
+            cache_dir.mkdir(parents=True, exist_ok=True)
+            local_path = cache_dir / f"{deck_name}.ydk"
+
+            db_list = parse_deck_list(entry.get("message"), [])
+            db_list = list(set(db_list))
+
+            with open(local_path, 'w') as f:
+                for line in db_list:
+                    f.write(f"{line}\n")
+            return local_path
+
+        return None
+    else:
+        cache_dir = get_cache_dir()
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        local_path = cache_dir / f"{deck_list.split("/")[-1]}.ydk"
+
+        if not local_path.exists():
+            print(f"Downloading {deck_list} to {local_path}")
+            urllib.request.urlretrieve(deck_list, local_path)
+        else:
+            print(f"Using cached: {local_path}")
+
+        return local_path

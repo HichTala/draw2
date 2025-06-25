@@ -21,28 +21,20 @@ def download_file(url, destination):
 
 
 class Draw:
-    def __init__(self, source, deck_list=None, debug=False):
+    def __init__(self, deck_list=None, debug=False):
         self.decklist = None
         if deck_list is not None:
             with open(deck_list) as f:
                 self.decklist = [line.rstrip() for line in f.readlines()]
 
-        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
         config = hf_hub_download(repo_id="HichTala/draw2", filename="draw_config.json")
         with open(config, "rb") as f:
             self.configs = json.load(f)
         yolo_path = hf_hub_download(repo_id="HichTala/draw2", filename="ygo_yolo.pt")
 
-        model_regression = YOLO(yolo_path)
-        self.results = model_regression.track(
-            source=source,
-            show_labels=False,
-            save=False,
-            device=device,
-            stream=True,
-            verbose=False
-        )
+        self.model_regression = YOLO(yolo_path)
 
         image_processor = AutoImageProcessor.from_pretrained(
             "google/vit-base-patch16-224-in21k",
@@ -52,7 +44,7 @@ class Draw:
             "image-classification",
             model="HichTala/draw2",
             image_processor=image_processor,
-            device_map=device
+            device_map=self.device
         )
 
         self.dataset = load_dataset("HichTala/ygoprodeck-dataset", split="train")
