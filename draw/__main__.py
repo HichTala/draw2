@@ -1,6 +1,7 @@
 import asyncio
 import base64
 import time
+from collections import deque
 
 import cv2
 import numpy as np
@@ -18,7 +19,7 @@ class DrawWebSocketHandler:
         self.displayed_time = 0
         self.displayed = {}
         self.counts = {}
-        self.queue = []
+        self.queue = deque([])
 
         self.waiting = True
 
@@ -48,16 +49,27 @@ class DrawWebSocketHandler:
                 self.counts[label] = 0
             self.counts[label] += 1
 
+        label = self.queue.popleft()
+        if label is not None:
+            self.displayed[label] = time.time()
+            image = dataset[int(label2id[label])]["image"]
+            image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+            # TODO: send image in the right format
+            websockets.send(image)
+
         for label, count in self.counts.items():
             if count > 60:
                 if label not in self.displayed:
-                    self.displayed[label] = time.time()
-                    image = dataset[int(label2id[label])]["image"]
-                    image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
-                    # TODO: send image in the right format
-                    websockets.send(image)
+                    if time.time() - self.displayed_time > self.waiting:
+                        self.displayed[label] = time.time()
+                        image = dataset[int(label2id[label])]["image"]
+                        image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+                        # TODO: send image in the right format
+                        websockets.send(image)
+                    else:
+                        self.queue.append(label)
                 else:
-                    if time.time() - self.displayed[label] < self.display_time:
+                    if time.time() - self.displayed[label] > self.display_time:
                         del self.displayed[label]
                         self.counts[label] = 0
 
