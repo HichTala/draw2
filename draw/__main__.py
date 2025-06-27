@@ -1,5 +1,8 @@
 import asyncio
 import base64
+import socket
+import struct
+import threading
 import time
 from collections import deque
 
@@ -8,6 +11,9 @@ import numpy as np
 from websockets import serve
 
 from draw.draw import Draw
+
+HOST = 'localhost'
+PORT = 1996
 
 
 class DrawWebSocketHandler:
@@ -23,28 +29,59 @@ class DrawWebSocketHandler:
 
         self.waiting = True
 
-    async def handler(self, websockets):
-        async for message in websockets:
-            if message["type"] == "image" and self.waiting:
-                # TODO: get the image in the right format
-                image = base64.b64decode(message['image'])
-                results = self.draw.model_regression.track(
-                    source=image,
-                    show_labels=False,
-                    save=False,
-                    device=self.draw.device,
-                    verbose=False,
-                    persist=True
-                )
+    def __call__(self):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.bind((HOST, PORT))
+            s.listen()
+            print(f"[INFO] Server listening on {HOST}:{PORT}")
 
-                outputs = self.draw.process(results, display=True)
-                self.display_card(websockets, outputs)
+            while True:
+                conn, addr = s.accept()
+                client_thread = threading.Thread(target=self.handler, args=(conn, addr), daemon=True)
+                client_thread.start()
 
-    async def main(self):
-        async with serve(self.handler, "localhost", 1996) as server:
-            await server.serve_forever()
+    def handler(self, conn, addr):
+        print(f"[INFO] Connected by {addr}")
 
-    def display_card(self, websockets, outputs):
+        try:
+            while True:
+                size_data = conn.recv(4)
+                if not size_data:
+                    break
+
+                img_size = struct.unpack('!I', size_data)[0]
+                img_data = b''
+
+                while len(img_data) < img_size:
+                    packet = conn.recv(img_size - len(img_data))
+                    if not packet:
+                        break
+                    img_data += packet
+
+                print(f"[DEBUG] Received image of size {len(img_data)} bytes")
+                if self.waiting:
+                    # TODO: get the image in the right format
+                    image = base64.b64decode(img_data)
+                    results = self.draw.model_regression.track(
+                        source=image,
+                        show_labels=False,
+                        save=False,
+                        device=self.draw.device,
+                        verbose=False,
+                        persist=True
+                    )
+
+                    outputs = self.draw.process(results, display=True)
+                    self.display_card(conn, outputs)
+
+        except Exception as e:
+            print(f"[ERROR] {e}")
+
+        finally:
+            print(f"[INFO] Connection closed {addr}")
+            conn.close()
+
+    def display_card(self, conn, outputs):
         for label in outputs['predictions']:
             if label not in self.counts:
                 self.counts[label] = 0
@@ -56,7 +93,7 @@ class DrawWebSocketHandler:
             image = self.draw.dataset[int(self.draw.label2id[label])]["image"]
             image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
             # TODO: send image in the right format
-            websockets.send(image)
+            conn.sendall(image)
 
         for label, count in self.counts.items():
             if count > 60:
@@ -67,7 +104,7 @@ class DrawWebSocketHandler:
                         image = self.draw.dataset[int(self.draw.label2id[label])]["image"]
                         image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
                         # TODO: send image in the right format
-                        websockets.send(image)
+                        conn.sendall(image)
                     else:
                         self.queue.append(label)
                 else:
@@ -78,4 +115,4 @@ class DrawWebSocketHandler:
 
 if __name__ == '__main__':
     websockets_handler = DrawWebSocketHandler()
-    asyncio.run(websockets_handler.main())
+    websockets_handler()
