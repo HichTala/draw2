@@ -1,13 +1,17 @@
 import math
+import mmap
 import os
 import platform
 import shutil
+import struct
 import time
 import urllib
 from pathlib import Path
 
 import cv2
 import numpy as np
+import posix_ipc
+from PIL import Image
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
@@ -192,3 +196,21 @@ def get_deck_list(deck_list):
             print(f"Using cached: {local_path}")
 
         return local_path
+
+
+def read_shared_frame(shm, header_size, header_format):
+    with mmap.mmap(shm.fd, shm.size, access=mmap.ACCESS_READ) as mm:
+        shm.close_fd()
+
+        header_bytes = mm[:header_size]
+        width, height = struct.unpack(header_format, header_bytes)
+
+        img_size = width * height * 4
+        if header_size + img_size > mm.size():
+            raise RuntimeError(f"Shared memory too small for {width}x{height} image.")
+
+        frame_data = mm[header_size:header_size + img_size]
+        frame_array = np.frombuffer(frame_data, dtype=np.uint8).reshape((height, width, 4))
+
+        img = Image.fromarray(frame_array, mode="RGBA").convert("RGB")
+        return img

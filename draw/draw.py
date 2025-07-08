@@ -174,5 +174,6 @@ class Draw:
                                                     (255, 255, 255),
                                                     2)
                                     break
-                        cv2.drawContours(outputs['image'], [obb], 0, (152, 255, 119), 2)
+                        if show or self.debug_mode:
+                            cv2.drawContours(outputs['image'], [obb], 0, (152, 255, 119), 2)
         return outputs
