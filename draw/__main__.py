@@ -7,9 +7,10 @@ import numpy as np
 import posix_ipc
 
 from draw.draw import Draw
-from draw.utils import read_shared_frame, show, get_deck_list
+from draw.utils import read_shared_frame, show, get_deck_list, send_image_to_obs
 
-SHM_NAME = "/obs_shared_memory"
+OBS_SHM_NAME = "/obs_shared_memory"
+PYTHON_SHM_NAME = "/python_shared_memory"
 HEADER_FORMAT = "II"
 HEADER_SIZE = struct.calcsize(HEADER_FORMAT)
 
@@ -58,12 +59,9 @@ class DrawSharedMemoryHandler:
         if len(self.queue) and time.time() - self.displayed_time > self.minimum_screen_time:
             label = self.queue.popleft()
             self.displayed[label] = time.time()
+            self.displayed_time = time.time()
             image = self.draw.dataset[int(self.draw.label2id[label])]["image"]
-            print(label)
-            image.show()
-            # image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
-            # TODO: Implement shared memory send to obs
-            # show(image)
+            send_image_to_obs(image, PYTHON_SHM_NAME, HEADER_SIZE, HEADER_FORMAT)
 
         for label, count in self.counts.items():
             if count > 60:
@@ -72,11 +70,7 @@ class DrawSharedMemoryHandler:
                         self.displayed[label] = time.time()
                         self.displayed_time = time.time()
                         image = self.draw.dataset[int(self.draw.label2id[label])]["image"]
-                        print(label)
-                        image.show()
-                        # image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
-                        # TODO: Implement shared memory send to obs
-                        # show(image)
+                        send_image_to_obs(image, PYTHON_SHM_NAME, HEADER_SIZE, HEADER_FORMAT)
                     else:
                         self.queue.append(label)
                 else:

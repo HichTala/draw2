@@ -214,3 +214,21 @@ def read_shared_frame(shm, header_size, header_format):
 
         img = Image.fromarray(frame_array, mode="RGBA").convert("RGB")
         return img
+
+def send_image_to_obs(image, shm_name, header_size, header_format):
+    img_rgba = image.convert("RGBA")
+    width, height = img_rgba.size
+    img_bytes = img_rgba.tobytes()
+
+    total_size = header_size + len(img_bytes)
+
+    # Create or open shared memory
+    shm = posix_ipc.SharedMemory(shm_name, posix_ipc.O_CREAT, size=total_size)
+    with mmap.mmap(shm.fd, total_size, mmap.MAP_SHARED, mmap.PROT_WRITE) as mm:
+        shm.close_fd()
+        # Write header
+        mm[:header_size] = struct.pack(header_format, width, height)
+        # Write pixel data
+        mm[header_size:] = img_bytes
+
+    print(f"Sent image {width}x{height} to OBS")
