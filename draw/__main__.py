@@ -72,7 +72,8 @@ class DrawSharedMemoryHandler:
                         image = self.draw.dataset[int(self.draw.label2id[label])]["image"]
                         send_image_to_obs(image, PYTHON_SHM_NAME, HEADER_SIZE, HEADER_FORMAT)
                     else:
-                        self.queue.append(label)
+                        if label not in self.queue:
+                            self.queue.append(label)
                 else:
                     if time.time() - self.displayed[label] > self.minimum_out_of_screen_time:
                         del self.displayed[label]
