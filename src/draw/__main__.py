@@ -2,12 +2,10 @@ import struct
 import time
 from collections import deque
 
-import cv2
-import numpy as np
 import posix_ipc
 
 from draw.draw import Draw
-from draw.utils import read_shared_frame, show, get_deck_list, send_image_to_obs
+from draw.utils import read_shared_frame, get_deck_list, send_image_to_obs
 
 OBS_SHM_NAME = "/obs_shared_memory"
 PYTHON_SHM_NAME = "/python_shared_memory"
@@ -36,19 +34,24 @@ class DrawSharedMemoryHandler:
                 continue
             except KeyboardInterrupt:
                 break
-
             image = read_shared_frame(shm, HEADER_SIZE, HEADER_FORMAT)
-            results = self.draw.model_regression.track(
-                source=image,
-                show_labels=False,
-                save=False,
-                device=self.draw.device,
-                verbose=False,
-                persist=True
-            )
-            for result in results:
-                outputs = self.draw.process(result, display=True)
-                self.display_card(outputs)
+            if image.size[0] == 0 or image.size[1] == 0:
+                continue
+            try:
+                results = self.draw.model_regression.track(
+                    source=image,
+                    show_labels=False,
+                    save=False,
+                    device=self.draw.device,
+                    verbose=False,
+                    persist=True
+                )
+                for result in results:
+                    outputs = self.draw.process(result, display=True)
+                    self.display_card(outputs)
+            except Exception as e:
+                print(f"Error processing shared memory: {e}")
+                breakpoint()
 
     def display_card(self, outputs):
         for label in outputs['predictions']:

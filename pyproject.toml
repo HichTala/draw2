@@ -1,0 +1,21 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "draw"
+version = "0.0.1"
+authors = [
+  { name="HichTala", email="hich.tala.phd@gmail.com" },
+]
+description = "Detecting and Recognizing A Wide range of cards"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/HichTala/draw2"
+Issues = "https://github.com/HichTala/draw2/issues"

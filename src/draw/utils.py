@@ -12,8 +12,8 @@ import cv2
 import numpy as np
 import posix_ipc
 from PIL import Image
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
+# from selenium import webdriver
+# from selenium.webdriver.chrome.options import Options
 
 
 def clean_deck_list(deck_list, classes):
@@ -154,36 +154,36 @@ def parse_deck_list(message, dl):
 def get_deck_list(deck_list):
     if os.path.isfile(deck_list):
         return deck_list
-    elif deck_list.isdigit() and len(deck_list) == 8:
-        options = Options()
-        options.add_argument('--headless')
-        options.set_capability('goog:loggingPrefs', {'browser': 'ALL'})
-
-        url = f"https://www.duelingbook.com/deck?id={deck_list}"
-
-        driver = webdriver.Chrome(options=options)
-        driver.set_page_load_timeout(3)
-        driver.get(url)
-        time.sleep(1)
-
-        for entry in driver.get_log('browser'):
-            deck_name = parse_deck_name(console_entry=entry) or 'No name'
-            if deck_name == 'No name':
-                continue
-
-            cache_dir = get_cache_dir()
-            cache_dir.mkdir(parents=True, exist_ok=True)
-            local_path = cache_dir / f"{deck_name}.ydk"
-
-            db_list = parse_deck_list(entry.get("message"), [])
-            db_list = list(set(db_list))
-
-            with open(local_path, 'w') as f:
-                for line in db_list:
-                    f.write(f"{line}\n")
-            return local_path
-
-        return None
+    # elif deck_list.isdigit() and len(deck_list) == 8:
+    #     options = Options()
+    #     options.add_argument('--headless')
+    #     options.set_capability('goog:loggingPrefs', {'browser': 'ALL'})
+    #
+    #     url = f"https://www.duelingbook.com/deck?id={deck_list}"
+    #
+    #     driver = webdriver.Chrome(options=options)
+    #     driver.set_page_load_timeout(3)
+    #     driver.get(url)
+    #     time.sleep(1)
+    #
+    #     for entry in driver.get_log('browser'):
+    #         deck_name = parse_deck_name(console_entry=entry) or 'No name'
+    #         if deck_name == 'No name':
+    #             continue
+    #
+    #         cache_dir = get_cache_dir()
+    #         cache_dir.mkdir(parents=True, exist_ok=True)
+    #         local_path = cache_dir / f"{deck_name}.ydk"
+    #
+    #         db_list = parse_deck_list(entry.get("message"), [])
+    #         db_list = list(set(db_list))
+    #
+    #         with open(local_path, 'w') as f:
+    #             for line in db_list:
+    #                 f.write(f"{line}\n")
+    #         return local_path
+    #
+    #     return None
     else:
         cache_dir = get_cache_dir()
         cache_dir.mkdir(parents=True, exist_ok=True)
