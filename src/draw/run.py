@@ -8,6 +8,10 @@ import posix_ipc
 from draw.draw import Draw
 from draw.utils import read_shared_frame, get_deck_list, send_image_to_obs
 
+import logging
+
+logging.disable(logging.CRITICAL)
+
 OBS_SHM_NAME = "/obs_shared_memory"
 PYTHON_SHM_NAME = "/python_shared_memory"
 HEADER_FORMAT = "II"
@@ -31,7 +35,6 @@ class DrawSharedMemoryHandler:
 
     def __call__(self, address=None, ready_ptr=None):
         continue_execution = True if address is None else address.contents.value
-        print("Starting Draw2 python backend")
         ready_ptr.contents.value = True
         while continue_execution:
             continue_execution = True if address is None else address.contents.value
@@ -59,7 +62,6 @@ class DrawSharedMemoryHandler:
             except Exception as e:
                 print(f"Error processing shared memory: {e}")
                 breakpoint()
-        print("Stopping Draw2 python backend")
 
     def display_card(self, outputs):
         for label in outputs['predictions']:
@@ -93,7 +95,7 @@ class DrawSharedMemoryHandler:
 
 def run(
         stop_flag=None,
-        model_ready=False,
+        model_ready=None,
         deck_list="",
         minimum_out_of_screen_time=25,
         minimum_screen_time=6,
@@ -106,13 +108,14 @@ def run(
         confidence_threshold=confidence_threshold
     )
 
-    if stop_flag is not None:
+    if stop_flag is not None and model_ready is not None:
         addr = ctypes.cast(ctypes.pythonapi.PyCapsule_GetPointer(stop_flag, b"stop_flag"),
                            ctypes.POINTER(ctypes.c_bool))
-        ready_ptr = ctypes.cast(ctypes.pythonapi.PyCapsule_GetPointer(model_ready, b"model_ready    "),
+        ready_ptr = ctypes.cast(ctypes.pythonapi.PyCapsule_GetPointer(model_ready, b"model_ready"),
                                 ctypes.POINTER(ctypes.c_bool))
         sh_memory_handler(address=addr, ready_ptr=ready_ptr)
     else:
+        print("Running Draw2 without OBS shared memory")
         sh_memory_handler()
 
 
