@@ -15,20 +15,25 @@ HEADER_SIZE = struct.calcsize(HEADER_FORMAT)
 
 
 class DrawSharedMemoryHandler:
-    def __init__(self):
-        self.draw = Draw(deck_list=get_deck_list("/home/hicham/Downloads/Odion_FS_Primite.ydk"))
+    def __init__(self, deck_list="", minimum_out_of_screen_time=25, minimum_screen_time=6, confidence_threshold=0.01):
+        self.draw = Draw(deck_list=get_deck_list(deck_list))
 
-        self.minimum_out_of_screen_time = 25
-        self.minimum_screen_time = 6
+        self.minimum_out_of_screen_time = minimum_out_of_screen_time
+        self.minimum_screen_time = minimum_screen_time
         self.displayed_time = 0
         self.displayed = {}
         self.counts = {}
         self.queue = deque([])
 
+        self.confidence_threshold = confidence_threshold
+
         self.waiting = True
 
     def __call__(self, address=None):
-        while True:
+        continue_execution = True if address is None else address.contents.value
+        print("Starting Draw2 python backend")
+        while continue_execution:
+            continue_execution = True if address is None else address.contents.value
             try:
                 shm = posix_ipc.SharedMemory("/obs_shared_memory", flags=0)
             except posix_ipc.ExistentialError:
@@ -53,6 +58,7 @@ class DrawSharedMemoryHandler:
             except Exception as e:
                 print(f"Error processing shared memory: {e}")
                 breakpoint()
+        print("Stopping Draw2 python backend")
 
     def display_card(self, outputs):
         for label in outputs['predictions']:
@@ -84,8 +90,13 @@ class DrawSharedMemoryHandler:
                         self.counts[label] = 0
 
 
-def run(stop_flag=None):
-    sh_memory_handler = DrawSharedMemoryHandler()
+def run(stop_flag=None, deck_list="", minimum_out_of_screen_time=25, minimum_screen_time=6, confidence_threshold=0.01):
+    sh_memory_handler = DrawSharedMemoryHandler(
+        deck_list=deck_list,
+        minimum_out_of_screen_time=minimum_out_of_screen_time,
+        minimum_screen_time=minimum_screen_time,
+        confidence_threshold=confidence_threshold
+    )
 
     if stop_flag is not None:
         addr = ctypes.cast(ctypes.pythonapi.PyCapsule_GetPointer(stop_flag, b"stop_flag"),
