@@ -1,3 +1,4 @@
+import ctypes
 import struct
 import time
 from collections import deque
@@ -26,7 +27,7 @@ class DrawSharedMemoryHandler:
 
         self.waiting = True
 
-    def __call__(self):
+    def __call__(self, address=None):
         while True:
             try:
                 shm = posix_ipc.SharedMemory("/obs_shared_memory", flags=0)
@@ -83,9 +84,15 @@ class DrawSharedMemoryHandler:
                         self.counts[label] = 0
 
 
-def run():
+def run(stop_flag=None):
     sh_memory_handler = DrawSharedMemoryHandler()
-    sh_memory_handler()
+
+    if stop_flag is not None:
+        addr = ctypes.cast(ctypes.pythonapi.PyCapsule_GetPointer(stop_flag, b"stop_flag"),
+                           ctypes.POINTER(ctypes.c_bool))
+        sh_memory_handler(address=addr)
+    else:
+        sh_memory_handler()
 
 
 if __name__ == '__main__':
