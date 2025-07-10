@@ -29,9 +29,10 @@ class DrawSharedMemoryHandler:
 
         self.waiting = True
 
-    def __call__(self, address=None):
+    def __call__(self, address=None, ready_ptr=None):
         continue_execution = True if address is None else address.contents.value
         print("Starting Draw2 python backend")
+        ready_ptr.contents.value = True
         while continue_execution:
             continue_execution = True if address is None else address.contents.value
             try:
@@ -90,7 +91,14 @@ class DrawSharedMemoryHandler:
                         self.counts[label] = 0
 
 
-def run(stop_flag=None, deck_list="", minimum_out_of_screen_time=25, minimum_screen_time=6, confidence_threshold=0.01):
+def run(
+        stop_flag=None,
+        model_ready=False,
+        deck_list="",
+        minimum_out_of_screen_time=25,
+        minimum_screen_time=6,
+        confidence_threshold=0.01
+):
     sh_memory_handler = DrawSharedMemoryHandler(
         deck_list=deck_list,
         minimum_out_of_screen_time=minimum_out_of_screen_time,
@@ -101,7 +109,9 @@ def run(stop_flag=None, deck_list="", minimum_out_of_screen_time=25, minimum_scr
     if stop_flag is not None:
         addr = ctypes.cast(ctypes.pythonapi.PyCapsule_GetPointer(stop_flag, b"stop_flag"),
                            ctypes.POINTER(ctypes.c_bool))
-        sh_memory_handler(address=addr)
+        ready_ptr = ctypes.cast(ctypes.pythonapi.PyCapsule_GetPointer(model_ready, b"model_ready    "),
+                                ctypes.POINTER(ctypes.c_bool))
+        sh_memory_handler(address=addr, ready_ptr=ready_ptr)
     else:
         sh_memory_handler()
 
