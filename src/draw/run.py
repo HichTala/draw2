@@ -3,17 +3,17 @@ import struct
 import time
 from collections import deque
 
-import posix_ipc
-
 from draw.draw import Draw
 from draw.utils import read_shared_frame, get_deck_list, send_image_to_obs
 
 import logging
+import win32con
+import win32file
 
 logging.disable(logging.CRITICAL)
 
-OBS_SHM_NAME = "/obs_shared_memory"
-PYTHON_SHM_NAME = "/python_shared_memory"
+OBS_SHM_NAME = "Local\\obs_shared_memory"
+PYTHON_SHM_NAME = "Local\\python_shared_memory"
 HEADER_FORMAT = "II"
 HEADER_SIZE = struct.calcsize(HEADER_FORMAT)
 
@@ -35,16 +35,18 @@ class DrawSharedMemoryHandler:
 
     def __call__(self, address=None, ready_ptr=None):
         continue_execution = True if address is None else address.contents.value
-        ready_ptr.contents.value = True
+        if ready_ptr is not None:
+            ready_ptr.contents.value = True
         while continue_execution:
             continue_execution = True if address is None else address.contents.value
             try:
-                shm = posix_ipc.SharedMemory("/obs_shared_memory", flags=0)
-            except posix_ipc.ExistentialError:
+                map_handle = win32file.OpenFileMapping(win32con.FILE_MAP_READ, False, OBS_SHM_NAME)
+                buf = win32file.MapViewOfFile(map_handle, win32con.FILE_MAP_READ, 0, 0)
+            except Exception:
                 continue
             except KeyboardInterrupt:
                 break
-            image = read_shared_frame(shm, HEADER_SIZE, HEADER_FORMAT)
+            image = read_shared_frame(buf, HEADER_SIZE, HEADER_FORMAT)
             if image.size[0] == 0 or image.size[1] == 0:
                 continue
             try:
