@@ -2,18 +2,17 @@ import ctypes
 import struct
 import time
 from collections import deque
+from multiprocessing import shared_memory
 
 from draw.draw import Draw
-from draw.utils import read_shared_frame, get_deck_list, send_image_to_obs
+from draw.utils import read_shared_frame, get_deck_list
 
 import logging
-import win32con
-import win32file
 
 logging.disable(logging.CRITICAL)
 
-OBS_SHM_NAME = "Local\\obs_shared_memory"
-PYTHON_SHM_NAME = "Local\\python_shared_memory"
+OBS_SHM_NAME = "obs_shared_memory"
+PYTHON_SHM_NAME = "python_shared_memory"
 HEADER_FORMAT = "II"
 HEADER_SIZE = struct.calcsize(HEADER_FORMAT)
 
@@ -21,6 +20,10 @@ HEADER_SIZE = struct.calcsize(HEADER_FORMAT)
 class DrawSharedMemoryHandler:
     def __init__(self, deck_list="", minimum_out_of_screen_time=25, minimum_screen_time=6, confidence_threshold=0.01):
         self.draw = Draw(deck_list=get_deck_list(deck_list))
+
+        self.obs_shm = None
+        self.python_shm = None
+        self.buf = None
 
         self.minimum_out_of_screen_time = minimum_out_of_screen_time
         self.minimum_screen_time = minimum_screen_time
@@ -37,18 +40,38 @@ class DrawSharedMemoryHandler:
         continue_execution = True if address is None else address.contents.value
         if ready_ptr is not None:
             ready_ptr.contents.value = True
+
+        print(f"Waiting for OBS to start...")
         while continue_execution:
             continue_execution = True if address is None else address.contents.value
             try:
-                map_handle = win32file.OpenFileMapping(win32con.FILE_MAP_READ, False, OBS_SHM_NAME)
-                buf = win32file.MapViewOfFile(map_handle, win32con.FILE_MAP_READ, 0, 0)
-            except Exception:
+                self.obs_shm = shared_memory.SharedMemory(name=OBS_SHM_NAME)
+            except FileNotFoundError:
+                continue
+            except ValueError:
                 continue
             except KeyboardInterrupt:
-                break
-            image = read_shared_frame(buf, HEADER_SIZE, HEADER_FORMAT)
+                return
+            break
+
+        print(f"Shared memory found")
+        while continue_execution:
+            try:
+                continue_execution = True if address is None else address.contents.value
+                image = read_shared_frame(self.obs_shm.buf, HEADER_SIZE, HEADER_FORMAT)
+            except TypeError:
+                breakpoint()
+            except ValueError:
+                breakpoint()
+            except KeyboardInterrupt:
+                print("Stopping Draw2...")
+                self.obs_shm.close()
+                self.python_shm.close()
+                return
+
             if image.size[0] == 0 or image.size[1] == 0:
                 continue
+
             try:
                 results = self.draw.model_regression.track(
                     source=image,
@@ -61,9 +84,14 @@ class DrawSharedMemoryHandler:
                 for result in results:
                     outputs = self.draw.process(result, display=True)
                     self.display_card(outputs)
-            except Exception as e:
-                print(f"Error processing shared memory: {e}")
-                breakpoint()
+            # except Exception as e:
+            #     print(f"Error processing shared memory: {e}")
+            #     breakpoint()
+            except KeyboardInterrupt:
+                print("Stopping Draw2...")
+                self.obs_shm.close()
+                self.python_shm.close()
+                return
 
     def display_card(self, outputs):
         for label in outputs['predictions']:
@@ -76,7 +104,7 @@ class DrawSharedMemoryHandler:
             self.displayed[label] = time.time()
             self.displayed_time = time.time()
             image = self.draw.dataset[int(self.draw.label2id[label])]["image"]
-            send_image_to_obs(image, PYTHON_SHM_NAME, HEADER_SIZE, HEADER_FORMAT)
+            self.send_image_to_obs(image)
 
         for label, count in self.counts.items():
             if count > 60:
@@ -85,7 +113,7 @@ class DrawSharedMemoryHandler:
                         self.displayed[label] = time.time()
                         self.displayed_time = time.time()
                         image = self.draw.dataset[int(self.draw.label2id[label])]["image"]
-                        send_image_to_obs(image, PYTHON_SHM_NAME, HEADER_SIZE, HEADER_FORMAT)
+                        self.send_image_to_obs(image)
                     else:
                         if label not in self.queue:
                             self.queue.append(label)
@@ -94,11 +122,31 @@ class DrawSharedMemoryHandler:
                         del self.displayed[label]
                         self.counts[label] = 0
 
+    def send_image_to_obs(self, image):
+        img_rgba = image.convert("RGBA")
+        width, height = img_rgba.size
+        img_bytes = img_rgba.tobytes()
+
+        total_size = HEADER_SIZE + len(img_bytes)
+
+        if self.python_shm is None:
+            self.python_shm = shared_memory.SharedMemory(name=PYTHON_SHM_NAME, create=True, size=total_size)
+
+        if total_size != self.python_shm.size:
+            self.python_shm.close()
+            self.python_shm.unlink()
+            self.python_shm = shared_memory.SharedMemory(name=PYTHON_SHM_NAME, create=True, size=total_size)
+
+        self.python_shm.buf[:HEADER_SIZE] = struct.pack(HEADER_FORMAT, width, height)
+        self.python_shm.buf[HEADER_SIZE:] = img_bytes
+
+        print(f"Sent image {width}x{height} to OBS")
+
 
 def run(
         stop_flag=None,
         model_ready=None,
-        deck_list="",
+        deck_list="/home/hicham/Downloads/Odion_FS_Primite.ydk",
         minimum_out_of_screen_time=25,
         minimum_screen_time=6,
         confidence_threshold=0.01
@@ -119,6 +167,11 @@ def run(
     else:
         print("Running Draw2 without OBS shared memory")
         sh_memory_handler()
+
+    if sh_memory_handler.obs_shm is not None:
+        sh_memory_handler.obs_shm.unlink()
+    if sh_memory_handler.python_shm is not None:
+        sh_memory_handler.python_shm.unlink()
 
 
 if __name__ == '__main__':
