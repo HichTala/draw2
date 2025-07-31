@@ -146,7 +146,7 @@ class DrawSharedMemoryHandler:
 def run(
         stop_flag=None,
         model_ready=None,
-        deck_list="/home/hicham/Downloads/Odion_FS_Primite.ydk",
+        deck_list="",
         minimum_out_of_screen_time=25,
         minimum_screen_time=6,
         confidence_threshold=0.01
@@ -163,6 +163,7 @@ def run(
                            ctypes.POINTER(ctypes.c_bool))
         ready_ptr = ctypes.cast(ctypes.pythonapi.PyCapsule_GetPointer(model_ready, b"model_ready"),
                                 ctypes.POINTER(ctypes.c_bool))
+        print("Running Draw2 with OBS shared memory")
         sh_memory_handler(address=addr, ready_ptr=ready_ptr)
     else:
         print("Running Draw2 without OBS shared memory")
