@@ -166,7 +166,7 @@ def main(args):
     draw = Draw(
         source=args.source,
         deck_list=deck_list,
-        # debug=True
+        debug=True
     )
 
     is_image = False

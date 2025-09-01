@@ -62,6 +62,9 @@ class Draw:
             self.label2id[label] = str(i)
 
         self.debug_mode = debug
+        self.cards_prob = {}
+
+
 
     def process(self, result, show=False, display=False):
         outputs = {}
@@ -140,11 +143,7 @@ class Draw:
                                     (255, 255, 255),
                                     2)
 
-                    if (
-                            (min_txt_aspect_ratio < txt_aspect_ratio < max_txt_aspect_ratio)
-                            and
-                            (min_txt_area < text_area < max_txt_area)
-                    ):
+                    if result.obb.id[nbox].item() not in self.cards_prob.keys() or self.cards_prob[result.obb.id[nbox].item()] >= self.th:
                         rotation = utils.get_rotation(boxes=result.obb.xywhr[nbox], box_txt=box_txt)
                         if rotation is None:
                             break
@@ -156,6 +155,13 @@ class Draw:
                         roi = Image.fromarray(roi)
 
                         output = self.classifier(roi, top_k=15)
+                        if result.obb.id[nbox].item() not in self.cards_prob.keys():
+                            self.cards_prob[result.obb.id[nbox].item()] = {card['label']: card['score'] for card in output}
+                        else:
+                            card_prob = self.cards_prob[result.obb.id[nbox].item()]
+                            self.cards_prob[result.obb.id[nbox].item()] = {
+                                card['label']: 0.5 * card_prob[card['label']] + 0.5 * card['score'] if card['label'] in card_prob else 0 for card in output
+                            }
 
                         if self.decklist is None:
                             if display:
@@ -163,7 +169,7 @@ class Draw:
                             if self.debug_mode:
                                 outputs['predictions'].append(output)
                             if show:
-                                cv2.putText(outputs['image'], ' '.join(output[0]['label'].split('-')[:-2]),
+                                cv2.putText(outputs['image'], ' '.join(output[0]['label'].split('-')[:-1]),
                                             (xy1[0], xy1[1]),
                                             cv2.FONT_HERSHEY_PLAIN,
                                             1.0,
@@ -176,7 +182,7 @@ class Draw:
                                     if display:
                                         outputs['predictions'].append(label)
                                     if show:
-                                        cv2.putText(outputs['image'], ' '.join(label.split('-')[:-2]), (xy1[0], xy1[1]),
+                                        cv2.putText(outputs['image'], ' '.join(label.split('-')[:-1]), (xy1[0], xy1[1]),
                                                     cv2.FONT_HERSHEY_PLAIN,
                                                     1.0,
                                                     (255, 255, 255),
