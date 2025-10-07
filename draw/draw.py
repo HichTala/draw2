@@ -21,7 +21,7 @@ def download_file(url, destination):
 
 
 class Draw:
-    def __init__(self, source, deck_list=None, debug=False):
+    def __init__(self, source, deck_list=None, confidence_threshold=0.05, debug=False):
         self.decklist = None
         if deck_list is not None:
             with open(deck_list) as f:
@@ -64,6 +64,8 @@ class Draw:
         self.debug_mode = debug
         self.cards_prob = {}
 
+        self.confidence_threshold = confidence_threshold
+
 
 
     def process(self, result, show=False, display=False):
@@ -74,30 +76,17 @@ class Draw:
         if show or self.debug_mode:
             outputs['image'] = result.orig_img.copy()
 
-        for nbox, boxe in enumerate(result.obb.xyxyxyxyn):
-            boxe = np.float32(
-                [[b[0] * result.orig_img.shape[1], b[1] * result.orig_img.shape[0]] for b in boxe.cpu()]
-            )
-            obb = np.intp(boxe)
-            xy1, _, xy2, _ = obb
+        if result.obb.id is not None:
+            for nbox, boxe in enumerate(result.obb.xyxyxyxyn):
+                boxe = np.float32(
+                    [[b[0] * result.orig_img.shape[1], b[1] * result.orig_img.shape[0]] for b in boxe.cpu()]
+                )
+                obb = np.intp(boxe)
+                xy1, _, xy2, _ = obb
 
-            max_aspect_ratio = self.configs['max_aspect_ratio']
-            min_aspect_ratio = self.configs['min_aspect_ratio']
-            aspect_ratio = max(
-                result.obb.xywhr[nbox][2], result.obb.xywhr[nbox][3]
-            ) / min(
-                result.obb.xywhr[nbox][2], result.obb.xywhr[nbox][3]
-            )
+                if self.debug_mode and show:
+                    cv2.drawContours(outputs['image'], [obb], 0, (119, 152, 255), 2)
 
-            if self.debug_mode and show:
-                cv2.drawContours(outputs['image'], [obb], 0, (119, 152, 255), 2)
-                cv2.putText(outputs['image'], "aspect ratio :" + str(aspect_ratio), (xy1[0], xy2[1]),
-                            cv2.FONT_HERSHEY_PLAIN,
-                            1.0,
-                            (255, 255, 255),
-                            2)
-
-            if max_aspect_ratio > aspect_ratio > min_aspect_ratio:
                 output_pts = np.float32([
                     [224, 224],
                     [224, 0],
@@ -118,65 +107,45 @@ class Draw:
 
                 if contours != ():
                     contour = contours[np.array(list(map(cv2.contourArea, contours))).argmax()]
-                    box_txt, txt_aspect_ratio = utils.get_txt(contour)
+                    box_txt = utils.get_txt(contour)
 
-                    max_txt_aspect_ratio = self.configs["max_txt_aspect_ratio"]
-                    min_txt_aspect_ratio = self.configs["min_txt_aspect_ratio"]
-                    max_txt_area = self.configs["max_txt_area"]
-                    min_txt_area = self.configs["min_txt_area"]
+                    rotation = utils.get_rotation(boxes=result.obb.xywhr[nbox], box_txt=box_txt)
+                    # if rotation is None:
+                    #     break
 
-                    text_area = cv2.contourArea(box_txt)
+                    if rotation != 0:
+                        roi = cv2.rotate(roi, rotation)
 
-                    if self.debug_mode and show:
-                        cv2.putText(outputs['image'],
-                                    f"text area : {str(text_area)}",
-                                    (xy1[0], xy1[1] + (xy2[1] - xy1[1]) // 2),
-                                    cv2.FONT_HERSHEY_PLAIN,
-                                    1.0,
-                                    (255, 255, 255),
-                                    2)
-                        cv2.putText(outputs['image'],
-                                    f"text aspect ratio : {str(txt_aspect_ratio)}",
-                                    (xy1[0], xy1[1] + (xy2[1] - xy1[1]) // 4),
-                                    cv2.FONT_HERSHEY_PLAIN,
-                                    1.0,
-                                    (255, 255, 255),
-                                    2)
+                    roi = cv2.cvtColor(roi, cv2.COLOR_BGR2RGB)
+                    roi = Image.fromarray(roi)
 
-                    if result.obb.id[nbox].item() not in self.cards_prob.keys() or self.cards_prob[result.obb.id[nbox].item()] >= self.th:
-                        rotation = utils.get_rotation(boxes=result.obb.xywhr[nbox], box_txt=box_txt)
-                        if rotation is None:
-                            break
+                    output = self.classifier(roi, top_k=15)
+                    if result.obb.id[nbox].item() not in self.cards_prob.keys():
+                        self.cards_prob[result.obb.id[nbox].item()] = {card['label']: card['score'] for card in output}
+                    else:
+                        card_prob = self.cards_prob[result.obb.id[nbox].item()]
+                        self.cards_prob[result.obb.id[nbox].item()] = {
+                            card['label']: 0.5 * card_prob[card['label']] + 0.5 * card['score'] if card['label'] in card_prob else 0 for card in output
+                        }
 
-                        if rotation != 0:
-                            roi = cv2.rotate(roi, rotation)
-
-                        roi = cv2.cvtColor(roi, cv2.COLOR_BGR2RGB)
-                        roi = Image.fromarray(roi)
-
-                        output = self.classifier(roi, top_k=15)
-                        if result.obb.id[nbox].item() not in self.cards_prob.keys():
-                            self.cards_prob[result.obb.id[nbox].item()] = {card['label']: card['score'] for card in output}
-                        else:
-                            card_prob = self.cards_prob[result.obb.id[nbox].item()]
-                            self.cards_prob[result.obb.id[nbox].item()] = {
-                                card['label']: 0.5 * card_prob[card['label']] + 0.5 * card['score'] if card['label'] in card_prob else 0 for card in output
-                            }
-
+                    topk = sorted(self.cards_prob[result.obb.id[nbox].item()].items(), key=lambda x: x[1], reverse=True)[:15]
+                    labels = [label for label, _ in topk]
+                    scores = [prob for _, prob in topk]
+                    if scores[0] >= self.confidence_threshold:
                         if self.decklist is None:
                             if display:
-                                outputs['predictions'].append(output[0]['label'])
+                                outputs['predictions'].append(labels[0])
                             if self.debug_mode:
                                 outputs['predictions'].append(output)
                             if show:
-                                cv2.putText(outputs['image'], ' '.join(output[0]['label'].split('-')[:-1]),
+                                cv2.putText(outputs['image'], ' '.join(labels[0].split('-')[:-1]),
                                             (xy1[0], xy1[1]),
                                             cv2.FONT_HERSHEY_PLAIN,
                                             1.0,
                                             (255, 255, 255),
                                             2)
                         else:
-                            for label in output:
+                            for label in labels:
                                 label = label['label']
                                 if label.split('-')[-1] in self.decklist:
                                     if display:

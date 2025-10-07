@@ -38,13 +38,7 @@ def extract_contours(roi, d, sigma_color, sigma_space, thresh):
 def get_txt(contour):
     rect = cv2.minAreaRect(contour)
     box_txt = cv2.boxPoints(rect)
-    box_txt = np.intp(box_txt)
-
-    dx = max(box_txt[:, 0]) - min(box_txt[:, 0])
-    dy = max(box_txt[:, 1]) - min(box_txt[:, 1])
-    txt_aspect_ratio = max(dx, dy) / min(dx, dy)
-
-    return box_txt, txt_aspect_ratio
+    return np.intp(box_txt)
 
 
 def get_rotation(boxes, box_txt):

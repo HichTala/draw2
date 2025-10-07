@@ -39,9 +39,9 @@ def parse_command_line():
 
 def show(im, p="draw2"):
     """Display an image in a window."""
-    if platform.system() == "Linux":
-        cv2.namedWindow(p, cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO)  # allow window resize (Linux)
-        cv2.resizeWindow(p, im.shape[1], im.shape[0])  # (width, height)
+    # if platform.system() == "Linux":
+    #     cv2.namedWindow(p, cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO)  # allow window resize (Linux)
+    #     cv2.resizeWindow(p, im.shape[1], im.shape[0])  # (width, height)
     cv2.imshow(p, im)
     cv2.waitKey(1)  # 1 millisecond
 
