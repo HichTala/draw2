@@ -120,32 +120,21 @@ class Draw:
                     roi = Image.fromarray(roi)
 
                     output = self.classifier(roi, top_k=15)
-                    if result.obb.id[nbox].item() not in self.cards_prob.keys():
-                        self.cards_prob[result.obb.id[nbox].item()] = {card['label']: card['score'] for card in output}
-                    else:
-                        card_prob = self.cards_prob[result.obb.id[nbox].item()]
-                        self.cards_prob[result.obb.id[nbox].item()] = {
-                            card['label']: 0.5 * card_prob[card['label']] + 0.5 * card['score'] if card['label'] in card_prob else 0 for card in output
-                        }
-
-                    topk = sorted(self.cards_prob[result.obb.id[nbox].item()].items(), key=lambda x: x[1], reverse=True)[:15]
-                    labels = [label for label, _ in topk]
-                    scores = [prob for _, prob in topk]
-                    if scores[0] >= self.confidence_threshold:
+                    if output[0]['score'] >= self.confidence_threshold:
                         if self.decklist is None:
                             if display:
-                                outputs['predictions'].append(labels[0])
+                                outputs['predictions'].append(output[0]['label'])
                             if self.debug_mode:
                                 outputs['predictions'].append(output)
                             if show:
-                                cv2.putText(outputs['image'], ' '.join(labels[0].split('-')[:-1]),
+                                cv2.putText(outputs['image'], ' '.join(output[0]['label'].split('-')[:-1]),
                                             (xy1[0], xy1[1]),
                                             cv2.FONT_HERSHEY_PLAIN,
                                             1.0,
                                             (255, 255, 255),
                                             2)
                         else:
-                            for label in labels:
+                            for label in output:
                                 label = label['label']
                                 if label.split('-')[-1] in self.decklist:
                                     if display:

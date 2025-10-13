@@ -208,8 +208,8 @@ def main(args):
             if args.display_card:
                 display_card(outputs, counts, displayed, draw.dataset, label2id)
 
-            if draw.debug_mode and outputs['predictions'] != []:
-                print(outputs['predictions'])
+            # if draw.debug_mode and outputs['predictions'] != []:
+                # print(outputs['predictions'])
 
         cv2.destroyAllWindows()
         if args.save and not is_image:
