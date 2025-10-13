@@ -18,8 +18,8 @@ HEADER_SIZE = struct.calcsize(HEADER_FORMAT)
 
 
 class DrawSharedMemoryHandler:
-    def __init__(self, deck_list="", minimum_out_of_screen_time=25, minimum_screen_time=6, confidence_threshold=0.01):
-        self.draw = Draw(deck_list=get_deck_list(deck_list))
+    def __init__(self, deck_list="", minimum_out_of_screen_time=25, minimum_screen_time=6, confidence_threshold=5):
+        self.draw = Draw(deck_list=get_deck_list(deck_list), confidence_threshold=confidence_threshold)
 
         self.obs_shm = None
         self.python_shm = None
@@ -82,7 +82,7 @@ class DrawSharedMemoryHandler:
                     persist=True
                 )
                 for result in results:
-                    outputs = self.draw.process(result, display=True)
+                    outputs = self.draw.process(result)
                     self.display_card(outputs)
             # except Exception as e:
             #     print(f"Error processing shared memory: {e}")
@@ -149,7 +149,7 @@ def run(
         deck_list="",
         minimum_out_of_screen_time=25,
         minimum_screen_time=6,
-        confidence_threshold=0.01
+        confidence_threshold=5
 ):
     sh_memory_handler = DrawSharedMemoryHandler(
         deck_list=deck_list,
