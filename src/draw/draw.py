@@ -99,7 +99,6 @@ class Draw:
 
                     output = self.classifier(roi, top_k=15)
                     if output[0]['score'] >= self.confidence_threshold/100:
-                        print(output[0])
                         if self.decklist is None:
                             outputs['predictions'].append(output[0]['label'])
                         else:
