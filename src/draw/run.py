@@ -19,7 +19,7 @@ HEADER_SIZE = struct.calcsize(HEADER_FORMAT)
 
 class DrawSharedMemoryHandler:
     def __init__(self, deck_list="", minimum_out_of_screen_time=25, minimum_screen_time=6, confidence_threshold=5):
-        self.draw = Draw(deck_list=get_deck_list(deck_list), confidence_threshold=confidence_threshold)
+        self.draw = Draw(deck_lists=get_deck_list(deck_list), confidence_threshold=confidence_threshold)
 
         self.obs_shm = None
         self.python_shm = None

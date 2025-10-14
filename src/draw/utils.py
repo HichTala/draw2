@@ -146,11 +146,12 @@ def parse_deck_list(message, dl):
     return parse_deck_list(message, dl)
 
 
-def get_deck_list(deck_list):
-    if os.path.isfile(deck_list):
-        return deck_list
-
-    return None
+def get_deck_list(deck_lists):
+    returned_deck_lists = []
+    for deck_list in deck_lists.split(";"):
+        if os.path.isfile(deck_list):
+            returned_deck_lists.append(deck_list)
+    return returned_deck_lists
 
 
 def read_shared_frame(buf, header_size, header_format):

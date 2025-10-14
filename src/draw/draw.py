@@ -20,12 +20,12 @@ def download_file(url, destination):
 
 
 class Draw:
-    def __init__(self, deck_list=None, confidence_threshold=5):
-        self.decklist = None
-        if deck_list is not None:
-            with open(deck_list) as f:
-                self.decklist = [line.rstrip() for line in f.readlines()]
-
+    def __init__(self, deck_lists=None, confidence_threshold=5):
+        self.decklist = []
+        if deck_lists is not None:
+            for deck_list in deck_lists:
+                with open(deck_list) as f:
+                    self.decklist += [line.rstrip() for line in f.readlines()]
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
         config = hf_hub_download(repo_id="HichTala/draw2", filename="draw_config.json")
@@ -99,7 +99,7 @@ class Draw:
 
                     output = self.classifier(roi, top_k=15)
                     if output[0]['score'] >= self.confidence_threshold/100:
-                        if self.decklist is None:
+                        if len(self.decklist) == 0:
                             outputs['predictions'].append(output[0]['label'])
                         else:
                             for label in output:
