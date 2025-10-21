@@ -107,7 +107,7 @@ class DrawSharedMemoryHandler:
             self.send_image_to_obs(image)
 
         for label, count in self.counts.items():
-            if count > 60:
+            if count > 20:
                 if label not in self.displayed:
                     if time.time() - self.displayed_time > self.minimum_screen_time:
                         self.displayed[label] = time.time()
