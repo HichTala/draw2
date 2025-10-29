@@ -1,12 +1,18 @@
+import os
 import json
+import sys
 
-import cv2
 import numpy as np
 import requests
 import torch
 from PIL import Image
 from datasets import load_dataset
 from huggingface_hub import hf_hub_download
+
+if sys.platform == 'win32':
+    os.add_dll_directory(sys.prefix)
+
+import cv2
 from transformers import AutoImageProcessor, pipeline
 from ultralytics import YOLO
 
@@ -98,7 +104,7 @@ class Draw:
                     roi = Image.fromarray(roi)
 
                     output = self.classifier(roi, top_k=15)
-                    if output[0]['score'] >= self.confidence_threshold/100:
+                    if output[0]['score'] >= self.confidence_threshold / 100:
                         if len(self.decklist) == 0:
                             outputs['predictions'].append(output[0]['label'])
                         else:
