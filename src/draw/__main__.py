@@ -10,7 +10,7 @@ import numpy as np
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
-from src.draw.draw import Draw
+from draw.draw import Draw
 
 
 def parse_command_line():
