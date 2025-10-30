@@ -88,4 +88,4 @@ You can reach me on Twitter [@tiazden](https://twitter.com/tiazden) or by email 
 ---
 ## <div align="center">⭐Star History</div>
 
-[![Star History Chart](https://api.star-history.com/svg?repos=hichtala/draw2&type=Date)](https://star-history.com/#hichtala/draw2&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=hichtala/draw2&type=date&legend=top-left)](https://www.star-history.com/#hichtala/draw2&type=date&legend=top-left)
