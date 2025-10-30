@@ -88,7 +88,6 @@ You can reach me on Twitter [@tiazden](https://twitter.com/tiazden) or by email 
 ---
 ## <div align="center">⭐Star History</div>
 
-## Star History
 <div align="center">
 <a href="https://www.star-history.com/#hichtala/draw2&type=date&legend=top-left">
  <picture>
