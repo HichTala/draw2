@@ -1,5 +1,4 @@
 import json
-import os
 
 import cv2
 import numpy as np
@@ -21,28 +20,20 @@ def download_file(url, destination):
 
 
 class Draw:
-    def __init__(self, source, deck_list=None, confidence_threshold=0.05, debug=False):
-        self.decklist = None
-        if deck_list is not None:
-            with open(deck_list) as f:
-                self.decklist = [line.rstrip() for line in f.readlines()]
-
-        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    def __init__(self, deck_lists=None, confidence_threshold=5):
+        self.decklist = []
+        if deck_lists is not None:
+            for deck_list in deck_lists:
+                with open(deck_list) as f:
+                    self.decklist += [line.rstrip() for line in f.readlines()]
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
         config = hf_hub_download(repo_id="HichTala/draw2", filename="draw_config.json")
         with open(config, "rb") as f:
             self.configs = json.load(f)
         yolo_path = hf_hub_download(repo_id="HichTala/draw2", filename="ygo_yolo.pt")
 
-        model_regression = YOLO(yolo_path)
-        self.results = model_regression.track(
-            source=source,
-            show_labels=False,
-            save=False,
-            device=device,
-            stream=True,
-            verbose=False
-        )
+        self.model_regression = YOLO(yolo_path)
 
         image_processor = AutoImageProcessor.from_pretrained(
             "google/vit-base-patch16-224-in21k",
@@ -52,7 +43,7 @@ class Draw:
             "image-classification",
             model="HichTala/draw2",
             image_processor=image_processor,
-            device_map=device
+            device_map=self.device
         )
 
         self.dataset = load_dataset("HichTala/ygoprodeck-dataset", split="train")
@@ -61,20 +52,10 @@ class Draw:
         for i, label in enumerate(labels):
             self.label2id[label] = str(i)
 
-        self.debug_mode = debug
-        self.cards_prob = {}
-
         self.confidence_threshold = confidence_threshold
 
-
-
-    def process(self, result, show=False, display=False):
-        outputs = {}
-
-        if display or self.debug_mode:
-            outputs['predictions'] = []
-        if show or self.debug_mode:
-            outputs['image'] = result.orig_img.copy()
+    def process(self, result):
+        outputs = {'predictions': []}
 
         if result.obb.id is not None:
             for nbox, boxe in enumerate(result.obb.xyxyxyxyn):
@@ -83,9 +64,6 @@ class Draw:
                 )
                 obb = np.intp(boxe)
                 xy1, _, xy2, _ = obb
-
-                if self.debug_mode and show:
-                    cv2.drawContours(outputs['image'], [obb], 0, (119, 152, 255), 2)
 
                 output_pts = np.float32([
                     [224, 224],
@@ -107,11 +85,11 @@ class Draw:
 
                 if contours != ():
                     contour = contours[np.array(list(map(cv2.contourArea, contours))).argmax()]
-                    box_txt = utils.get_txt(contour)
+                    box_txt, txt_aspect_ratio = utils.get_txt(contour)
 
                     rotation = utils.get_rotation(boxes=result.obb.xywhr[nbox], box_txt=box_txt)
-                    # if rotation is None:
-                    #     break
+                    if rotation is None:
+                        break
 
                     if rotation != 0:
                         roi = cv2.rotate(roi, rotation)
@@ -120,31 +98,13 @@ class Draw:
                     roi = Image.fromarray(roi)
 
                     output = self.classifier(roi, top_k=15)
-                    if output[0]['score'] >= self.confidence_threshold:
-                        if self.decklist is None:
-                            if display:
-                                outputs['predictions'].append(output[0]['label'])
-                            if self.debug_mode:
-                                outputs['predictions'].append(output)
-                            if show:
-                                cv2.putText(outputs['image'], ' '.join(output[0]['label'].split('-')[:-1]),
-                                            (xy1[0], xy1[1]),
-                                            cv2.FONT_HERSHEY_PLAIN,
-                                            1.0,
-                                            (255, 255, 255),
-                                            2)
+                    if output[0]['score'] >= self.confidence_threshold / 100:
+                        if len(self.decklist) == 0:
+                            outputs['predictions'].append(output[0]['label'])
                         else:
                             for label in output:
                                 label = label['label']
                                 if label.split('-')[-1] in self.decklist:
-                                    if display:
-                                        outputs['predictions'].append(label)
-                                    if show:
-                                        cv2.putText(outputs['image'], ' '.join(label.split('-')[:-1]), (xy1[0], xy1[1]),
-                                                    cv2.FONT_HERSHEY_PLAIN,
-                                                    1.0,
-                                                    (255, 255, 255),
-                                                    2)
+                                    outputs['predictions'].append(label)
                                     break
-                        cv2.drawContours(outputs['image'], [obb], 0, (152, 255, 119), 2)
         return outputs

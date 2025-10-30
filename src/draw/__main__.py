@@ -1,6 +1,5 @@
 import argparse
 import os
-import platform
 import shutil
 import time
 import urllib
@@ -11,7 +10,7 @@ import numpy as np
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
-from draw.draw import Draw
+from src.draw.draw import Draw
 
 
 def parse_command_line():
@@ -38,10 +37,6 @@ def parse_command_line():
 
 
 def show(im, p="draw2"):
-    """Display an image in a window."""
-    # if platform.system() == "Linux":
-    #     cv2.namedWindow(p, cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO)  # allow window resize (Linux)
-    #     cv2.resizeWindow(p, im.shape[1], im.shape[0])  # (width, height)
     cv2.imshow(p, im)
     cv2.waitKey(1)  # 1 millisecond
 
@@ -147,7 +142,7 @@ def get_deck_list(deck_list):
     else:
         cache_dir = get_cache_dir()
         cache_dir.mkdir(parents=True, exist_ok=True)
-        local_path = cache_dir / f"{deck_list.split("/")[-1]}.ydk"
+        local_path = cache_dir / f"{deck_list.split('/')[-1]}.ydk"
 
         if not local_path.exists():
             print(f"Downloading {deck_list} to {local_path}")
@@ -207,9 +202,6 @@ def main(args):
 
             if args.display_card:
                 display_card(outputs, counts, displayed, draw.dataset, label2id)
-
-            # if draw.debug_mode and outputs['predictions'] != []:
-                # print(outputs['predictions'])
 
         cv2.destroyAllWindows()
         if args.save and not is_image:
