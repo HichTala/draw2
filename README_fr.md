@@ -26,7 +26,7 @@ et en particulier dans les images de duels.
 Avec cette nouvelle version, **DRAW 2** va au-delà de son prédécesseur. Il est plus précis, plus robuste 
 et beaucoup plus simple à utiliser.
 Il comprend désormais un [plugin OBS](https://github.com/HichTala/draw2-obsplugin) qui permet aux utilisateurs 
-d'intégrer de manière transparente le détecteur directement dans leurs streams ou leurs vidéos;
+d'intégrer de manière transparente le détecteur directement dans leurs streams ou leurs vidéos ;
 et ceux **sans avoir de compétences techniques particulières**.
 Le plugin peut afficher les cartes détectées en temps réel pour une expérience visuelle améliorée.
 
@@ -110,12 +110,10 @@ L'idée est proche de ce projet, mais elle n'en est pas à l'origine.
 ---
 ## <div align="center">⭐Historique des Stars</div>
 
-<div align="center">
-<a href="https://www.star-history.com/#hichtala/draw2&type=date&legend=top-left">
+<a href="https://www.star-history.com/#HichTala/draw2&type=date&legend=top-left">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=hichtala/draw2&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=hichtala/draw2&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=hichtala/draw2&type=date&legend=top-left" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=HichTala/draw2&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=HichTala/draw2&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=HichTala/draw2&type=date&legend=top-left" />
  </picture>
 </a>
-</div>
