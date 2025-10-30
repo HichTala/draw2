@@ -1,7 +1,6 @@
 <div align="center">
     <p>
-        👀
-        <!img src="">
+        <img src="figures/banner-draw.png">
     </p>
 
 
@@ -32,7 +31,7 @@ The plugin can display detected cards in real time for an enhanced viewing exper
 
 Other works exist (see [Related Works](#div-aligncenterrelated-worksdiv)) but none is capable of recognizing cards during a duel.
 
-This project is licensed under the [GNU Affero General Public License v3.0.](LICENCE); all contributions are welcome.
+This project is licensed under the [GNU Affero General Public License v3.0](LICENCE); all contributions are welcome.
 
 ---
 ## <div align="center">📄Documentation</div>

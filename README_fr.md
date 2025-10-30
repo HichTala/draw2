@@ -1,7 +1,6 @@
 <div align="center">
     <p>
-        👀
-        <!img src="">
+        <img src="figures/banner-draw.png">
     </p>
 
 
@@ -33,7 +32,7 @@ Le plugin peut afficher les cartes détectées en temps réel pour une expérien
 
 D'autres travaux existent (voir [Projets connexes](#div-aligncenterprojets-connexesdiv)) mais aucun n'est capable de reconnaître des cartes pendant un duel.
 
-Ce projet est sous licence [GNU Affero General Public License v3.0.](LICENCE) ; toutes les contributions sont les bienvenues.
+Ce projet est sous licence [GNU Affero General Public License v3.0](LICENCE) ; toutes les contributions sont les bienvenues.
 
 ---
 ## <div align="center">📄Documentation</div>
