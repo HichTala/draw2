@@ -28,7 +28,7 @@ et beaucoup plus simple à utiliser.
 Il comprend désormais un [plugin OBS](https://github.com/HichTala/draw2-obsplugin) qui permet aux utilisateurs 
 d'intégrer de manière transparente le détecteur directement dans leurs streams ou leurs vidéos ;
 et ceux **sans avoir de compétences techniques particulières**.
-Le plugin peut afficher les cartes détectées en temps réel pour une expérience visuelle améliorée.
+Le plugin peut afficher les cartes détectées en temps réel pour une expérience visuelle améliorée pour les spectateurs.
 
 D'autres travaux existent (voir [Projets connexes](#div-aligncenterprojets-connexesdiv)) mais aucun n'est capable de reconnaître des cartes pendant un duel.
 
@@ -41,7 +41,7 @@ Si vous souhaitez simplement utiliser le plugin, veuillez vous référer à la [
 Dans ce cas, aucune installation n’est nécessaire à partir de ce repo.
 La documentation ci-dessous s'adresse aux personnes qui souhaitent utiliser le détecteur en dehors d'OBS, ce qui nécessite certaines compétences techniques.
 
-### Installation
+### 🛠️ Installation
 
 Vous avez besoin d'installer Python. L'installation de Python ne sera pas détaillée ici, vous pouvez vous référer à la [documentation](https://www.python.org/).
 
@@ -67,6 +67,27 @@ python -m pip install git+https://github.com/HichTala/draw2.git
 ```
 
 Votre installation est maintenant terminée.
+
+### 🚀 Utilisation
+
+Une fois l'installation terminée, vous pouvez utiliser le détecteur en exécutant la commande suivante :
+
+```Shell
+python -m draw
+```
+
+Vous pour ajouter le flag `--help` pour afficher toutes les options disponibles. :
+```Shell
+python -m draw --help
+```
+
+Les options les plus importantes sont les suivantes :
+- `--source`: Chemin vers l'image, la vidéo ou l'indice de la webcam (par default, `0` pour la webcam).
+- `--save`: Chemin où sauvegarder la vidéo.
+- `--show`: Pour afficher la vidéo en temps réel.
+- `--display-card`: Pour afficher l'image de la carte détectée.
+- `--deck-list`: Chemin vers un fichier ydk contenant la deck lists (permet d'améliorer la précision).
+- `--fps`: FPS de la vidéo à sauvegarder (par default, 60).
 
 ---
 ## <div align="center">💡Inspiration</div>
@@ -106,6 +127,11 @@ Cela est particulièrement pertinent pour notre cas d'utilisation, car il permet
 Elle permet au joueur de cliquer sur une carte sur le flux de n'importe quel joueur pour l'identifier rapidement. 
 Il a quelques similitudes avec `draw` puisqu'il rend possible la localisaton et la reconnaissance de n'importe quelle carte à partir d'une base de données de 17 000 cartes.
 L'idée est proche de ce projet, mais elle n'en est pas à l'origine.
+
+---
+## <div align="center">💬Contact</div>
+
+Vous pouvez me joindre sur Twitter [@tiazden](https://twitter.com/tiazden) ou par mail [hich.tala.phd@gmail.com](mailto:hich.tala.phd@gmail.com).
 
 ---
 ## <div align="center">⭐Historique des Stars</div>
