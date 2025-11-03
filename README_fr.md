@@ -11,7 +11,7 @@
 [![HuggingFace Downloads](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fhuggingface.co%2Fapi%2Fmodels%2FHichTala%2Fdraw2&query=%24.downloads&logo=huggingface&label=downloads&color=%23FFD21E)](https://huggingface.co/HichTala/draw2)
 [![OBS Plugin](https://img.shields.io/badge/-obs_plugin-302E31?logo=obsstudio&labelColor=555&color=%23302E31)](https://github.com/HichTala/draw2-obsplugin)
 [![WandB](https://img.shields.io/badge/visualize_in-W%26B-yellow?logo=weightsandbiases&color=%23FFBE00)](https://wandb.ai/hich_/draw)
-[![Medium](https://img.shields.io/badge/Medium-12100E?style=flat&logo=medium&logoColor=white)](https://medium.com/@hich.tala.phd/how-i-trained-a-model-to-detect-and-recognise-a-wide-range-of-yu-gi-oh-cards-6ea71da007fd)
+[![Medium](https://img.shields.io/badge/Medium-12100E?style=flat&logo=medium&logoColor=white)](https://medium.com/@hich.tala.phd/how-i-trained-again-my-model-to-detect-and-recognise-a-wide-range-of-yu-gi-oh-cards-5c567a320b0a)
 
 
 [🇬🇧 English](README.md)
@@ -127,6 +127,14 @@ Cela est particulièrement pertinent pour notre cas d'utilisation, car il permet
 Elle permet au joueur de cliquer sur une carte sur le flux de n'importe quel joueur pour l'identifier rapidement. 
 Il a quelques similitudes avec `draw` puisqu'il rend possible la localisaton et la reconnaissance de n'importe quelle carte à partir d'une base de données de 17 000 cartes.
 L'idée est proche de ce projet, mais elle n'en est pas à l'origine.
+
+---
+## <div align="center">🔍Aperçu de la méthode</div>
+
+Un blog medium expliquant le processus principal, de la collecte des données à la prédiction finale a été publié.
+Vous pouvez le retrouver [ici](https://medium.com/@hich.tala.phd/how-i-trained-again-my-model-to-detect-and-recognise-a-wide-range-of-yu-gi-oh-cards-5c567a320b0a). Si vous avez des questions, n'hésitez pas à ouvrir une issue.
+
+[![Medium](https://img.shields.io/badge/Medium-12100E?style=flat&logo=medium&logoColor=white)](https://medium.com/@hich.tala.phd/how-i-trained-again-my-model-to-detect-and-recognise-a-wide-range-of-yu-gi-oh-cards-5c567a320b0a)
 
 ---
 ## <div align="center">💬Contact</div>
