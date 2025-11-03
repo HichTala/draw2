@@ -20,7 +20,7 @@ def download_file(url, destination):
 
 
 class Draw:
-    def __init__(self, deck_lists=None, confidence_threshold=5):
+    def __init__(self, source, deck_lists=None, confidence_threshold=5):
         self.decklist = []
         if deck_lists is not None:
             for deck_list in deck_lists:
@@ -33,7 +33,15 @@ class Draw:
             self.configs = json.load(f)
         yolo_path = hf_hub_download(repo_id="HichTala/draw2", filename="ygo_yolo.pt")
 
-        self.model_regression = YOLO(yolo_path)
+        model_regression = YOLO(yolo_path)
+        self.results = model_regression.track(
+            source=source,
+            show_labels=False,
+            save=False,
+            device=self.device,
+            stream=True,
+            verbose=False
+        )
 
         image_processor = AutoImageProcessor.from_pretrained(
             "google/vit-base-patch16-224-in21k",
@@ -54,8 +62,13 @@ class Draw:
 
         self.confidence_threshold = confidence_threshold
 
-    def process(self, result):
-        outputs = {'predictions': []}
+    def process(self, result, show=False, display=False):
+        outputs = {}
+
+        if display:
+            outputs['predictions'] = []
+        if show:
+            outputs['image'] = result.orig_img.copy()
 
         if result.obb.id is not None:
             for nbox, boxe in enumerate(result.obb.xyxyxyxyn):
@@ -84,6 +97,10 @@ class Draw:
                 )
 
                 if contours != ():
+
+                    if show:
+                        cv2.drawContours(outputs['image'], [obb], 0, (152, 255, 119), 2)
+
                     contour = contours[np.array(list(map(cv2.contourArea, contours))).argmax()]
                     box_txt, txt_aspect_ratio = utils.get_txt(contour)
 
@@ -100,11 +117,28 @@ class Draw:
                     output = self.classifier(roi, top_k=15)
                     if output[0]['score'] >= self.confidence_threshold / 100:
                         if len(self.decklist) == 0:
-                            outputs['predictions'].append(output[0]['label'])
+                            if display:
+                                outputs['predictions'].append(output[0]['label'])
+                            if show:
+                                cv2.putText(outputs['image'], ' '.join(output[0]['label'].split('-')[:-1]),
+                                            (xy1[0], xy1[1]),
+                                            cv2.FONT_HERSHEY_PLAIN,
+                                            1.0,
+                                            (255, 255, 255),
+                                            2)
+
                         else:
                             for label in output:
                                 label = label['label']
                                 if label.split('-')[-1] in self.decklist:
-                                    outputs['predictions'].append(label)
+                                    if display:
+                                        outputs['predictions'].append(output[0]['label'])
+                                    if show:
+                                        cv2.putText(outputs['image'], ' '.join(output[0]['label'].split('-')[:-1]),
+                                                    (xy1[0], xy1[1]),
+                                                    cv2.FONT_HERSHEY_PLAIN,
+                                                    1.0,
+                                                    (255, 255, 255),
+                                                    2)
                                     break
         return outputs
