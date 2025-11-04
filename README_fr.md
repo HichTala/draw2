@@ -140,7 +140,7 @@ Vous pouvez le retrouver [ici](https://medium.com/@hich.tala.phd/how-i-trained-a
 ---
 ## <div align="center">💬Contact</div>
 
-Vous pouvez me joindre sur Twitter [@tiazden](https://twitter.com/hichtala) ou par mail [hich.tala.phd@gmail.com](mailto:hich.tala.phd@gmail.com).
+Vous pouvez me joindre sur Twitter [@hichtala](https://twitter.com/hichtala) ou par mail [hich.tala.phd@gmail.com](mailto:hich.tala.phd@gmail.com).
 
 ---
 ## <div align="center">⭐Historique des Stars</div>
