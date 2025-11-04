@@ -8,7 +8,7 @@
 
 [![Licence](https://img.shields.io/pypi/l/ultralytics)](LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/HichTala/draw2?logoColor=%23181717)](https://github.com/HichTala/draw2)
-[![Twitter](https://badgen.net/badge/icon/twitter?icon=twitter&label)](https://twitter.com/tiazden)
+[![Twitter](https://badgen.net/badge/icon/twitter?icon=twitter&label)](https://twitter.com/hichtala)
 [![HuggingFace Downloads](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fhuggingface.co%2Fapi%2Fmodels%2FHichTala%2Fdraw2&query=%24.downloads&logo=huggingface&label=downloads&color=%23FFD21E)](https://huggingface.co/HichTala/draw2)
 [![OBS Plugin](https://img.shields.io/badge/-obs_plugin-302E31?logo=obsstudio&labelColor=555&color=%23302E31)](https://github.com/HichTala/draw2-obsplugin)
 [![WandB](https://img.shields.io/badge/visualize_in-W%26B-yellow?logo=weightsandbiases&color=%23FFBE00)](https://wandb.ai/hich_/draw)
@@ -168,7 +168,7 @@ You can access it at [this](https://medium.com/@hich.tala.phd/how-i-trained-agai
 
 ## <div align="center">💬Contact</div>
 
-You can reach me on Twitter [@tiazden](https://twitter.com/tiazden) or by email
+You can reach me on Twitter [@hichtala](https://twitter.com/hichtala) or by email
 at [hich.tala.phd@gmail.com](mailto:hich.tala.phd@gmail.com).
 
 ---
