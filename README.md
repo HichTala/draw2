@@ -42,7 +42,7 @@ If you juste want to use the plugin, please refer to the [OBS plugin page](https
 You don't need to install anything from this repository.
 The documentation below is for people who want to use the detector outside of OBS, this will require some coding skills.
 
-### Installation
+### 🛠️ Installation
 
 You need python to be installed. Python installation isn't going to be detailed here, you can refer to
 the [documentation](https://www.python.org/).
