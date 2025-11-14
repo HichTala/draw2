@@ -8,9 +8,9 @@
 
 [![Licence](https://img.shields.io/pypi/l/ultralytics)](LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/HichTala/draw2?logoColor=%23181717)](https://github.com/HichTala/draw2)
-[![Twitter](https://badgen.net/badge/icon/twitter?icon=twitter&label)](https://twitter.com/hichtala)
+[![Twitter](https://img.shields.io/badge/-twitter-000?logo=x&labelColor=555)](https://twitter.com/hichtala)
 [![HuggingFace Downloads](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fhuggingface.co%2Fapi%2Fmodels%2FHichTala%2Fdraw2&query=%24.downloads&logo=huggingface&label=downloads&color=%23FFD21E)](https://huggingface.co/HichTala/draw2)
-[![OBS Plugin](https://img.shields.io/badge/-obs_plugin-302E31?logo=obsstudio&labelColor=555&color=%23302E31)](https://github.com/HichTala/draw2-obsplugin)
+[![Plugin](https://img.shields.io/badge/-plugin_for_obs-302E31?logo=obsstudio&labelColor=555&color=%23302E31)](https://github.com/HichTala/draw2-plugin)
 [![WandB](https://img.shields.io/badge/visualize_in-W%26B-yellow?logo=weightsandbiases&color=%23FFBE00)](https://wandb.ai/hich_/draw)
 [![Medium](https://img.shields.io/badge/-Medium-12100E?style=flat&logo=medium&labelColor=555)](https://medium.com/@hich.tala.phd/how-i-trained-again-my-model-to-detect-and-recognise-a-wide-range-of-yu-gi-oh-cards-5c567a320b0a)
 
@@ -25,9 +25,10 @@ DRAW 2 (which stands for **D**etect and **R**ecognize **A** **W**ide range of ca
 trained to detect _Yu-Gi-Oh!_ cards in all types of images, and in particular in dueling images.
 
 With this new version, **DRAW 2** goes beyond its predecessor. It’s more accurate, more robust, and way easier to use.
-It now includes an [OBS plugin](https://github.com/HichTala/draw2-obsplugin) that lets users seamlessly integrate the
+It now includes a [plugin for OBS](https://github.com/HichTala/draw2-plugin) that lets users seamlessly integrate the
 detector directly into their live streams or recorded videos; and those **without any particular technical skills**.
-The plugin can display detected cards in real time for an enhanced viewing experience.
+The plugin can display detected cards in real time for an enhanced viewing experience. 
+(this a third party plugin for OBS Studio. It is not affiliated with or endorsed by the OBS Project)
 
 Other works exist (see [Related Works](#div-aligncenterrelated-worksdiv)) but none is capable of recognizing cards
 during a duel.
@@ -38,7 +39,7 @@ This project is licensed under the [GNU Affero General Public License v3.0](LICE
 
 ## <div align="center">📄Documentation</div>
 
-If you juste want to use the plugin, please refer to the [OBS plugin page](https://github.com/HichTala/draw2-obsplugin).
+If you juste want to use the plugin, please refer to the [plugin page](https://github.com/HichTala/draw2-plugin).
 You don't need to install anything from this repository.
 The documentation below is for people who want to use the detector outside of OBS, this will require some coding skills.
 
