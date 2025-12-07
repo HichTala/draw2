@@ -1,7 +1,14 @@
 import math
+import os
+import platform
+import shutil
+import struct
+from multiprocessing import shared_memory
+from pathlib import Path
 
 import cv2
 import numpy as np
+from PIL import Image
 
 
 def clean_deck_list(deck_list, classes):
@@ -38,7 +45,13 @@ def extract_contours(roi, d, sigma_color, sigma_space, thresh):
 def get_txt(contour):
     rect = cv2.minAreaRect(contour)
     box_txt = cv2.boxPoints(rect)
-    return np.intp(box_txt)
+    box_txt = np.intp(box_txt)
+
+    dx = max(box_txt[:, 0]) - min(box_txt[:, 0])
+    dy = max(box_txt[:, 1]) - min(box_txt[:, 1])
+    txt_aspect_ratio = max(dx, dy) / min(dx, dy)
+
+    return box_txt, txt_aspect_ratio
 
 
 def get_rotation(boxes, box_txt):
@@ -77,3 +90,83 @@ def get_rotation(boxes, box_txt):
             rotation = None
 
     return rotation
+
+
+def show(im, p="draw2"):
+    """Display an image in a window."""
+    if platform.system() == "Linux":
+        cv2.namedWindow(p, cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO)  # allow window resize (Linux)
+        cv2.resizeWindow(p, im.shape[1], im.shape[0])  # (width, height)
+    cv2.imshow(p, im)
+    cv2.waitKey(1)  # 1 millisecond
+
+
+def save(is_image, outputs, video_writer, save_path):
+    if is_image:
+        cv2.imwrite(f"{save_path}.png", outputs['image'])
+    else:
+        video_writer.write(outputs['image'])
+
+
+def get_cache_dir():
+    return Path(os.getenv("XDG_CACHE_HOME", Path.home() / ".cache")) / "draw2"
+
+
+def clear_cache():
+    cache_dir = get_cache_dir()
+    if cache_dir.exists():
+        shutil.rmtree(cache_dir)
+
+
+def parse_deck_name(console_entry):
+    message = console_entry.get('message', '')
+    if not message or '\\"action\\":\\"Success\\"' not in message:
+        return ''
+    pattern = '\\"name\\":\\"'
+    start = message.find(pattern) + len(pattern)
+    message = message[start:]
+    pattern = '\\",'
+    end = message.find(pattern)
+    message = message[:end]
+    return message
+
+
+def parse_deck_list(message, dl):
+    pattern = '\\"serial_number\\":\\"'
+    if pattern not in message:
+        return dl
+    start = message.find(pattern) + len(pattern)
+    message = message[start:]
+    pattern = '\\",'
+    end = message.find(pattern)
+    serial_number = message[:end]
+    dl.append(serial_number)
+
+    message = message[end:]
+    return parse_deck_list(message, dl)
+
+
+def get_deck_list(deck_lists):
+    returned_deck_lists = []
+    for deck_list in deck_lists.split(";"):
+        if os.path.isfile(deck_list):
+            returned_deck_lists.append(deck_list)
+    return returned_deck_lists
+
+
+def read_shared_frame(buf, header_size, header_format):
+    header_bytes = buf[:header_size]
+    width, height = struct.unpack(header_format, header_bytes)
+
+    img_size = width * height * 4
+    if header_size + img_size > len(buf):
+        raise RuntimeError(f"Shared memory too small for {width}x{height} image.")
+
+    frame_data = buf[header_size:header_size + img_size]
+    frame_array = np.frombuffer(frame_data, dtype=np.uint8).reshape((height, width, 4))
+
+    img = Image.fromarray(frame_array, mode="RGBA").convert("RGB")
+    return img
+
+
+
