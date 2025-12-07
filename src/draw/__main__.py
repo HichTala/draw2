@@ -160,8 +160,7 @@ def main(args):
 
     draw = Draw(
         source=args.source,
-        deck_list=deck_list,
-        debug=True
+        deck_lists=deck_list
     )
 
     is_image = False
