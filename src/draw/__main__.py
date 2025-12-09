@@ -190,10 +190,7 @@ def main(args):
 
     try:
         for result in draw.results:
-            start = time.time()
             outputs = draw.process(result, show=args.show, display=args.display_card)
-            stop = time.time()
-            print(stop - start)
 
             if args.show:
                 show(outputs['image'])
