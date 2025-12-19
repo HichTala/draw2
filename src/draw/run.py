@@ -1,8 +1,12 @@
 import ctypes
 import struct
+import sys
 import time
 from collections import deque
 from multiprocessing import shared_memory
+
+if sys.platform == 'win32':
+    import mmap
 
 from draw.draw import Draw
 from draw.utils import read_shared_frame, get_deck_list
@@ -15,6 +19,8 @@ OBS_SHM_NAME = "obs_shared_memory"
 PYTHON_SHM_NAME = "python_shared_memory"
 HEADER_FORMAT = "II"
 HEADER_SIZE = struct.calcsize(HEADER_FORMAT)
+
+SIZE = 8104 * 1024
 
 
 class DrawSharedMemoryHandler:
@@ -45,10 +51,15 @@ class DrawSharedMemoryHandler:
         while continue_execution:
             continue_execution = True if address is None else address.contents.value
             try:
-                self.obs_shm = shared_memory.SharedMemory(name=OBS_SHM_NAME)
+                if sys.platform == 'win32':
+                    self.obs_shm = mmap.mmap(-1, SIZE, tagname=OBS_SHM_NAME, access=mmap.ACCESS_READ)
+                else:
+                    self.obs_shm = shared_memory.SharedMemory(name=OBS_SHM_NAME)
             except FileNotFoundError:
                 continue
             except ValueError:
+                continue
+            except OSError:
                 continue
             except KeyboardInterrupt:
                 return
@@ -58,11 +69,24 @@ class DrawSharedMemoryHandler:
         while continue_execution:
             try:
                 continue_execution = True if address is None else address.contents.value
-                image = read_shared_frame(self.obs_shm.buf, HEADER_SIZE, HEADER_FORMAT)
-            except TypeError:
-                breakpoint()
-            except ValueError:
-                breakpoint()
+                if sys.platform == 'win32':
+                    self.obs_shm.seek(0)
+                    buf = self.obs_shm.read(SIZE)  # self.obs_shm.size())
+                else:
+                    buf = self.obs_shm.buf
+                image = read_shared_frame(buf, HEADER_SIZE, HEADER_FORMAT)
+            except TypeError as e:
+                print("Type Error: ", e)
+                print("Stopping Draw2...")
+                self.obs_shm.close()
+                self.python_shm.close()
+                return
+            except ValueError as e:
+                print("Value Error: ", e)
+                print("Stopping Draw2...")
+                self.obs_shm.close()
+                self.python_shm.close()
+                return
             except KeyboardInterrupt:
                 print("Stopping Draw2...")
                 self.obs_shm.close()
@@ -130,15 +154,30 @@ class DrawSharedMemoryHandler:
         total_size = HEADER_SIZE + len(img_bytes)
 
         if self.python_shm is None:
-            self.python_shm = shared_memory.SharedMemory(name=PYTHON_SHM_NAME, create=True, size=total_size)
+            if sys.platform == 'win32':
+                self.python_shm = mmap.mmap(-1, total_size, tagname=PYTHON_SHM_NAME, access=mmap.ACCESS_WRITE)
+                self.python_shm.seek(0)
+                self.python_shm.write(b"\x00" * total_size)
+            else:
+                self.python_shm = shared_memory.SharedMemory(name=PYTHON_SHM_NAME, create=True, size=total_size)
 
         if total_size != self.python_shm.size:
             self.python_shm.close()
-            self.python_shm.unlink()
-            self.python_shm = shared_memory.SharedMemory(name=PYTHON_SHM_NAME, create=True, size=total_size)
+            if sys.platform == 'win32':
+                self.python_shm = mmap.mmap(-1, total_size, tagname=PYTHON_SHM_NAME, access=mmap.ACCESS_WRITE)
+                self.python_shm.seek(0)
+                self.python_shm.write(b"\x00" * total_size)
+            else:
+                self.python_shm.unlink()
+                self.python_shm = shared_memory.SharedMemory(name=PYTHON_SHM_NAME, create=True, size=total_size)
 
-        self.python_shm.buf[:HEADER_SIZE] = struct.pack(HEADER_FORMAT, width, height)
-        self.python_shm.buf[HEADER_SIZE:] = img_bytes
+        if sys.platform == 'win32':
+            self.python_shm.seek(0)
+            self.python_shm.write(struct.pack(HEADER_FORMAT, width, height))
+            self.python_shm.write(img_bytes)
+        else:
+            self.python_shm.buf[:HEADER_SIZE] = struct.pack(HEADER_FORMAT, width, height)
+            self.python_shm.buf[HEADER_SIZE:] = img_bytes
 
         print(f"Sent image {width}x{height} to OBS")
 
