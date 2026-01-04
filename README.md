@@ -52,21 +52,15 @@ We first need to install pytorch. It is recommended to use a package manager suc
 as [miniconda](https://docs.conda.io/projects/miniconda/en/latest/).
 Please refer to the [documentation](https://docs.conda.io/projects/miniconda/en/latest/).
 
-When everything is set up you can run the following command to install pytorch:
-
-```shell
-python -m pip install torch torchvision
-```
-
 If you want to use you gpus to make everything run faster, please refer
 the [documentation](https://pytorch.org/get-started/locally/)
 
-Then you just have to clone the repo and install `requirements`:
+Then you just have to clone the repo and install the dependencies:
 
 ```shell
-git clone https://github.com/HichTala/draw
-cd draw
-python -m pip install -r requirements.txt
+git clone https://github.com/HichTala/draw2
+cd draw2
+python -m pip install .
 ```
 
 If you don't want to clone the repository and have already all the requirements installed, you can just run:
