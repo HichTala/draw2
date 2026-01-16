@@ -5,7 +5,7 @@ import time
 import urllib
 from functools import wraps
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Any
 
 import cv2
 import numpy as np
@@ -13,6 +13,9 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
 from draw.draw import Draw
+
+
+OpenCVImage = cv2.Mat | np.ndarray[Any, np.dtype]
 
 
 def parse_command_line():
@@ -53,7 +56,7 @@ def save(is_image, outputs, video_writer, save_path):
         video_writer.write(outputs['image'])
 
 
-def detect_card(outputs, counts, displayed, dataset, label2id, on_detected: Callable[[any, any, any], None]):
+def detect_card(outputs, counts, displayed, dataset, label2id, on_detected: Callable[[OpenCVImage, OpenCVImage, str], None]):
     for label in outputs['predictions']:
         if label not in counts:
             counts[label] = 0
