@@ -3,6 +3,7 @@ import os
 import shutil
 import time
 import urllib
+from functools import wraps
 from pathlib import Path
 from typing import Callable
 
@@ -72,6 +73,24 @@ def detect_card(outputs, counts, displayed, dataset, label2id, on_detected: Call
                     counts[label] = 0
 
 
+def drop_duplicate_calls_with_consecutive_labels(func):
+    @wraps(func)
+    def decorator(*args, **kwargs):
+        label = kwargs.get('label')
+        if label is None and len(args) >= 4:
+            label = args[3]
+
+        if decorator.previous_label == label:
+            return
+
+        decorator.previous_label = label
+        return func(*args, **kwargs)
+
+    decorator.previous_label = None
+    return decorator
+
+
+@drop_duplicate_calls_with_consecutive_labels
 def save_images(directory: Path, predicted_image, photo_image, label):
     if directory.is_file(follow_symlinks=True):
         raise Exception('save_images <directory> is required to not be a file')
