@@ -14,7 +14,6 @@ from selenium.webdriver.chrome.options import Options
 
 from draw.draw import Draw
 
-
 OpenCVImage = cv2.Mat | np.ndarray[Any, np.dtype]
 
 
@@ -56,7 +55,8 @@ def save(is_image, outputs, video_writer, save_path):
         video_writer.write(outputs['image'])
 
 
-def detect_card(outputs, counts, displayed, dataset, label2id, on_detected: Callable[[OpenCVImage, OpenCVImage, str], None]):
+def detect_card(outputs, counts, displayed, last_detected, dataset, label2id,
+                on_detected: Callable[[OpenCVImage, OpenCVImage, str], None]):
     for label in outputs['predictions']:
         if label not in counts:
             counts[label] = 0
@@ -68,7 +68,9 @@ def detect_card(outputs, counts, displayed, dataset, label2id, on_detected: Call
                 displayed[label] = 6
                 image = dataset[int(label2id[label])]["image"]
                 image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
-                on_detected(image, outputs['image'], label)
+                if last_detected != label:
+                    last_detected = label
+                    on_detected(image, outputs['image'], label)
             else:
                 displayed[label] -= 1
                 if displayed[label] == 0:
@@ -76,24 +78,6 @@ def detect_card(outputs, counts, displayed, dataset, label2id, on_detected: Call
                     counts[label] = 0
 
 
-def drop_duplicate_calls_with_consecutive_labels(func):
-    @wraps(func)
-    def decorator(*args, **kwargs):
-        label = kwargs.get('label')
-        if label is None and len(args) >= 4:
-            label = args[3]
-
-        if decorator.previous_label == label:
-            return
-
-        decorator.previous_label = label
-        return func(*args, **kwargs)
-
-    decorator.previous_label = None
-    return decorator
-
-
-@drop_duplicate_calls_with_consecutive_labels
 def save_images(directory: Path, predicted_image, photo_image, label):
     if directory.is_file(follow_symlinks=True):
         raise Exception('save_images <directory> is required to not be a file')
@@ -222,6 +206,7 @@ def main(args):
         # TODO put those as arguments inside draw class
         counts = {}
         displayed = {}
+        last_detected = None
 
         labels = draw.dataset.features["label"].names
         label2id = dict()
@@ -246,7 +231,15 @@ def main(args):
                     save_images(Path(args.save_images).absolute(), predicted_image, photo_image, label)
 
             if requires_detection_loop:
-                detect_card(outputs, counts, displayed, draw.dataset, label2id, on_detected)
+                detect_card(
+                    outputs=outputs,
+                    counts=counts,
+                    displayed=displayed,
+                    last_detected=last_detected,
+                    dataset=draw.dataset,
+                    label2id=label2id,
+                    on_detected=on_detected
+                )
 
         cv2.destroyAllWindows()
         if args.save and not is_image:
