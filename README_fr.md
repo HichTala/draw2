@@ -86,6 +86,7 @@ python -m draw --help
 Les options les plus importantes sont les suivantes :
 - `--source`: Chemin vers l'image, la vidéo ou l'indice de la webcam (par default, `0` pour la webcam).
 - `--save`: Chemin où sauvegarder la vidéo.
+- `--save-images`: Pour sauvegarder les images et les photos des cartes détectées.
 - `--show`: Pour afficher la vidéo en temps réel.
 - `--display-card`: Pour afficher l'image de la carte détectée.
 - `--deck-list`: Chemin vers un fichier ydk contenant la deck lists (permet d'améliorer la précision).

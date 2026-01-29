@@ -89,6 +89,7 @@ Here are the most important options:
 
 - `--source`: Path to your image, video, or webcam index (default is `0` for webcam).
 - `--save`: Save path for the output.
+- `--save-images`: Save the card images and photos of detected cards.
 - `--show`: Display the output in a window.
 - `--display-card`: Display detected cards on the output.
 - `--deck-list`: Path to a ydk file containing the list of cards in your deck for better recognition.

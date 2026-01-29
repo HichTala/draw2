@@ -3,7 +3,9 @@ import os
 import shutil
 import time
 import urllib
+from functools import wraps
 from pathlib import Path
+from typing import Callable, Any
 
 import cv2
 import numpy as np
@@ -11,6 +13,8 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
 from draw.draw import Draw
+
+OpenCVImage = cv2.Mat | np.ndarray[Any, np.dtype]
 
 
 def parse_command_line():
@@ -21,6 +25,9 @@ def parse_command_line():
 
     parser.add_argument("--save", nargs="?", const="output",
                         help="Save the video. Optionally provide a path. If not, saves as 'output' in current dir.")
+
+    parser.add_argument("--save-images", nargs="?", const="output_images",
+                        help="Save the card images and photos of detected cards. Optionally provide a path. If not, saves images to 'output_images' in current dir.")
 
     parser.add_argument('--show', action='store_true',
                         help="Show video.")
@@ -48,7 +55,8 @@ def save(is_image, outputs, video_writer, save_path):
         video_writer.write(outputs['image'])
 
 
-def display_card(outputs, counts, displayed, dataset, label2id):
+def detect_card(outputs, counts, displayed, last_detected, dataset, label2id,
+                on_detected: Callable[[OpenCVImage, OpenCVImage, str], None]):
     for label in outputs['predictions']:
         if label not in counts:
             counts[label] = 0
@@ -60,12 +68,27 @@ def display_card(outputs, counts, displayed, dataset, label2id):
                 displayed[label] = 6
                 image = dataset[int(label2id[label])]["image"]
                 image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
-                show(image, p="draw2 - Card")
+                if last_detected != label:
+                    last_detected = label
+                    on_detected(image, outputs['image'], label)
             else:
                 displayed[label] -= 1
                 if displayed[label] == 0:
                     del displayed[label]
                     counts[label] = 0
+
+
+def save_images(directory: Path, predicted_image, photo_image, label):
+    if directory.is_file(follow_symlinks=True):
+        raise Exception('save_images <directory> is required to not be a file')
+
+    directory.mkdir(parents=True, exist_ok=True)
+
+    timestamp = int(time.time())
+    photo_path = str(directory / f'photo_{label}_{timestamp}.jpg')
+    image_path = str(directory / f'card_{label}_{timestamp}.jpg')
+    cv2.imwrite(photo_path, photo_image)
+    cv2.imwrite(image_path, predicted_image)
 
 
 def get_cache_dir():
@@ -178,10 +201,12 @@ def main(args):
         video_writer = cv2.VideoWriter(f'{save_path}.avi', fourcc, args.fps,
                                        (first_frame.shape[0], first_frame.shape[1]))
 
-    if args.display_card:
+    requires_detection_loop = bool(args.display_card or args.save_images)
+    if requires_detection_loop:
         # TODO put those as arguments inside draw class
         counts = {}
         displayed = {}
+        last_detected = None
 
         labels = draw.dataset.features["label"].names
         label2id = dict()
@@ -199,8 +224,22 @@ def main(args):
             if args.save:
                 save(is_image, outputs, video_writer, save_path)
 
-            if args.display_card:
-                display_card(outputs, counts, displayed, draw.dataset, label2id)
+            def on_detected(predicted_image, photo_image, label):
+                if args.display_card:
+                    show(predicted_image, p='draw2 - Card')
+                if args.save_images:
+                    save_images(Path(args.save_images).absolute(), predicted_image, photo_image, label)
+
+            if requires_detection_loop:
+                detect_card(
+                    outputs=outputs,
+                    counts=counts,
+                    displayed=displayed,
+                    last_detected=last_detected,
+                    dataset=draw.dataset,
+                    label2id=label2id,
+                    on_detected=on_detected
+                )
 
         cv2.destroyAllWindows()
         if args.save and not is_image:
