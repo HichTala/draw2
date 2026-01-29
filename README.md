@@ -27,7 +27,7 @@ trained to detect _Yu-Gi-Oh!_ cards in all types of images, and in particular in
 With this new version, **DRAW 2** goes beyond its predecessor. It’s more accurate, more robust, and way easier to use.
 It now includes a [plugin for OBS](https://github.com/HichTala/draw2-plugin) that lets users seamlessly integrate the
 detector directly into their live streams or recorded videos; and those **without any particular technical skills**.
-The plugin can display detected cards in real time for an enhanced viewing experience. 
+The plugin can display detected cards in real time for an enhanced viewing experience.
 (this a third party plugin for OBS Studio. It is not affiliated with or endorsed by the OBS Project)
 
 Other works exist (see [Related Works](#div-aligncenterrelated-worksdiv)) but none is capable of recognizing cards
@@ -48,14 +48,10 @@ The documentation below is for people who want to use the detector outside of OB
 You need python to be installed. Python installation isn't going to be detailed here, you can refer to
 the [documentation](https://www.python.org/).
 
-We first need to install pytorch. It is recommended to use a package manager such
-as [miniconda](https://docs.conda.io/projects/miniconda/en/latest/).
+It is recommended to use a package manager such as [miniconda](https://docs.conda.io/projects/miniconda/en/latest/).
 Please refer to the [documentation](https://docs.conda.io/projects/miniconda/en/latest/).
 
-If you want to use you gpus to make everything run faster, please refer
-the [documentation](https://pytorch.org/get-started/locally/)
-
-Then you just have to clone the repo and install the dependencies:
+Once everything is ready, you just have to clone the repo and install the dependencies:
 
 ```shell
 git clone https://github.com/HichTala/draw2
@@ -153,10 +149,13 @@ cards.
 The idea is close to this project, but it didn't originate it.
 
 ---
+
 ## <div align="center">🔍Method Overview</div>
 
-A medium blog post explaining the main process from data collection to final prediction has been written. 
-You can access it at [this](https://medium.com/@hich.tala.phd/how-i-trained-again-my-model-to-detect-and-recognise-a-wide-range-of-yu-gi-oh-cards-5c567a320b0a) adress. If you have any questions, don't hesitate to open an issue.
+A medium blog post explaining the main process from data collection to final prediction has been written.
+You can access it
+at [this](https://medium.com/@hich.tala.phd/how-i-trained-again-my-model-to-detect-and-recognise-a-wide-range-of-yu-gi-oh-cards-5c567a320b0a)
+adress. If you have any questions, don't hesitate to open an issue.
 
 [![Medium](https://img.shields.io/badge/-Medium-12100E?style=flat&logo=medium&labelColor=555)](https://medium.com/@hich.tala.phd/how-i-trained-again-my-model-to-detect-and-recognise-a-wide-range-of-yu-gi-oh-cards-5c567a320b0a)
 
