@@ -79,7 +79,7 @@ def detect_card(outputs, counts, displayed, last_detected, dataset, label2id,
 
 
 def save_images(directory: Path, predicted_image, photo_image, label):
-    if directory.is_file(follow_symlinks=True):
+    if directory.is_file():
         raise Exception('save_images <directory> is required to not be a file')
 
     directory.mkdir(parents=True, exist_ok=True)
