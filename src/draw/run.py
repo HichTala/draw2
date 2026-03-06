@@ -68,13 +68,13 @@ class DrawSharedMemoryHandler:
 
         print(f"Shared memory found")
         if sys.platform == 'win32':
-            buf = memoryview(self.obs_shm)
+            obs_buf = memoryview(self.obs_shm)
         else:
-            buf = memoryview(self.obs_shm.buf)
+            obs_buf = memoryview(self.obs_shm.buf)
         while continue_execution:
             try:
                 continue_execution = True if address is None else address.contents.value
-                image = read_shared_frame(buf, HEADER_SIZE, HEADER_FORMAT)
+                image = read_shared_frame(obs_buf, HEADER_SIZE, HEADER_FORMAT)
             except TypeError as e:
                 print("type error: ", e)
                 break
@@ -153,7 +153,9 @@ class DrawSharedMemoryHandler:
             self.python_shm = mmap.mmap(-1, total_size, tagname=PYTHON_SHM_NAME, access=mmap.ACCESS_WRITE)
             self.python_shm.seek(0)
             self.python_shm.write(b"\x00" * total_size)
-            self.shm_array = np.ndarray((height, width, channels), dtype=np.uint8, buffer=memoryview(self.python_shm)[HEADER_SIZE:])
+            python_buf = memoryview(self.python_shm)
+            self.shm_array = np.ndarray((height, width, channels), dtype=np.uint8, buffer=python_buf[HEADER_SIZE:])
+            python_buf[:HEADER_SIZE] = struct.pack(HEADER_FORMAT, width, height)
         elif self.python_shm is None or total_size != self.python_shm.size:
             if self.python_shm is not None:
                 self.python_shm.close()
