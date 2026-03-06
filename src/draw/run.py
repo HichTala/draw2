@@ -12,7 +12,26 @@ import os
 import sys
 import logging
 
-logging.disable(logging.CRITICAL)
+log_dir = os.path.join(os.environ["APPDATA"], "obs-studio")
+os.makedirs(log_dir, exist_ok=True)
+
+log_path = os.path.join(log_dir, "python_subprocess.log")
+
+# --- logging (flushes immediately) ---
+logging.basicConfig(
+    filename=log_path,
+    level=logging.DEBUG,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    force=True,   # important if logging was configured before
+)
+
+# --- redirect print() too ---
+log_file = open(log_path, "a", buffering=1)  # line-buffered
+sys.stdout = log_file
+sys.stderr = log_file
+
+logging.info("Python subprocess started")
+print("print() is real-time now")
 
 OBS_SHM_NAME = "obs_shared_memory"
 PYTHON_SHM_NAME = "python_shared_memory"
