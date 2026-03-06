@@ -32,7 +32,6 @@ class DrawSharedMemoryHandler:
 
         self.obs_shm = None
         self.python_shm = None
-        self.buf = None
         self.shm_array = None
 
         self.minimum_out_of_screen_time = minimum_out_of_screen_time
@@ -84,8 +83,8 @@ class DrawSharedMemoryHandler:
                 break
             except KeyboardInterrupt:
                 print("Stopping Draw2...")
-                self.obs_shm.close()
-                self.python_shm.close()
+                close_shared_memory(self.obs_shm)
+                close_shared_memory(self.python_shm)
                 log_file.close()
                 return
 
@@ -107,8 +106,8 @@ class DrawSharedMemoryHandler:
 
             except KeyboardInterrupt:
                 print("Stopping Draw2...")
-                self.obs_shm.close()
-                self.python_shm.close()
+                close_shared_memory(self.obs_shm)
+                close_shared_memory(self.python_shm)
                 log_file.close()
                 return
 
@@ -144,7 +143,7 @@ class DrawSharedMemoryHandler:
     def send_image_to_obs(self, image):
         img_array = np.array(image.convert("RGBA"))
         print(image.size)
-        width, height, channels = img_array.shape
+        height, width, channels = img_array.shape
 
         total_size = HEADER_SIZE + img_array.nbytes
 
@@ -154,18 +153,26 @@ class DrawSharedMemoryHandler:
             self.python_shm = mmap.mmap(-1, total_size, tagname=PYTHON_SHM_NAME, access=mmap.ACCESS_WRITE)
             self.python_shm.seek(0)
             self.python_shm.write(b"\x00" * total_size)
-            self.shm_array = np.ndarray((width, height, channels), dtype=np.uint8, buffer=self.buf[HEADER_SIZE:])
+            self.shm_array = np.ndarray((height, width, channels), dtype=np.uint8, buffer=memoryview(self.python_shm)[HEADER_SIZE:])
         elif self.python_shm is None or total_size != self.python_shm.size:
             if self.python_shm is not None:
                 self.python_shm.close()
                 self.python_shm.unlink()
             self.python_shm = shared_memory.SharedMemory(name=PYTHON_SHM_NAME, create=True, size=total_size)
-            self.shm_array = np.ndarray((width, height, channels), dtype=np.uint8, buffer=self.python_shm.buf[HEADER_SIZE:])
-            self.python_shm.buf[:HEADER_SIZE] = struct.pack(HEADER_FORMAT, height, width)
+            self.shm_array = np.ndarray((height, width, channels), dtype=np.uint8, buffer=self.python_shm.buf[HEADER_SIZE:])
+            self.python_shm.buf[:HEADER_SIZE] = struct.pack(HEADER_FORMAT, width, height)
         self.shm_array[:] = img_array
 
         print(f"Sent image {width}x{height} to OBS")
 
+def close_shared_memory(shm):
+    if sys.platform == 'win32':
+        if shm is not None:
+            shm.close()
+    else:
+        if shm is not None:
+            shm.close()
+            shm.unlink()
 
 def run(
         stop_flag=None,
@@ -193,10 +200,8 @@ def run(
         print("Running Draw2 without OBS shared memory")
         sh_memory_handler()
 
-    if sh_memory_handler.obs_shm is not None:
-        sh_memory_handler.obs_shm.unlink()
-    if sh_memory_handler.python_shm is not None:
-        sh_memory_handler.python_shm.unlink()
+    close_shared_memory(sh_memory_handler.obs_shm)
+    close_shared_memory(sh_memory_handler.python_shm)
 
 
 if __name__ == '__main__':
