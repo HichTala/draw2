@@ -61,18 +61,17 @@ class DrawSharedMemoryHandler:
                 else:
                     self.obs_shm = shared_memory.SharedMemory(name=OBS_SHM_NAME)
                     print("mapped size:", self.obs_shm.size)
-            except FileNotFoundError:
-                continue
-            except ValueError:
-                continue
-            except OSError:
+            except (FileNotFoundError, ValueError, OSError):
                 continue
             except KeyboardInterrupt:
                 return
             break
 
         print(f"Shared memory found")
-        buf = memoryview(self.obs_shm)
+        if sys.platform == 'win32':
+            buf = memoryview(self.obs_shm)
+        else:
+            buf = memoryview(self.obs_shm.buf)
         while continue_execution:
             try:
                 continue_execution = True if address is None else address.contents.value
@@ -144,31 +143,25 @@ class DrawSharedMemoryHandler:
 
     def send_image_to_obs(self, image):
         img_array = np.array(image.convert("RGBA"))
-        width, height = img_array.shape
+        print(image.size)
+        width, height, channels = img_array.shape
 
         total_size = HEADER_SIZE + img_array.nbytes
 
-        if self.python_shm is None:
-            if sys.platform == 'win32':
-                self.python_shm = mmap.mmap(-1, total_size, tagname=PYTHON_SHM_NAME, access=mmap.ACCESS_WRITE)
-                self.python_shm.seek(0)
-                self.python_shm.write(b"\x00" * total_size)
-            else:
-                self.python_shm = shared_memory.SharedMemory(name=PYTHON_SHM_NAME, create=True, size=total_size)
-
-        if sys.platform == 'win32' and total_size != self.python_shm.size():
+        if sys.platform == 'win32' and (self.python_shm is None or total_size != self.python_shm.size()):
+            if self.python_shm is not None:
                 self.python_shm.close()
-                self.python_shm = mmap.mmap(-1, total_size, tagname=PYTHON_SHM_NAME, access=mmap.ACCESS_WRITE)
-                self.python_shm.seek(0)
-                self.python_shm.write(b"\x00" * total_size)
-                self.shm_array = np.ndarray((height, width, 4), dtype=np.uint8, buffer=self.buf)
-        elif total_size != self.python_shm.size:
+            self.python_shm = mmap.mmap(-1, total_size, tagname=PYTHON_SHM_NAME, access=mmap.ACCESS_WRITE)
+            self.python_shm.seek(0)
+            self.python_shm.write(b"\x00" * total_size)
+            self.shm_array = np.ndarray((width, height, channels), dtype=np.uint8, buffer=self.buf[HEADER_SIZE:])
+        elif self.python_shm is None or total_size != self.python_shm.size:
+            if self.python_shm is not None:
                 self.python_shm.close()
                 self.python_shm.unlink()
-                self.python_shm = shared_memory.SharedMemory(name=PYTHON_SHM_NAME, create=True, size=total_size)
-                self.shm_array = np.ndarray((height, width, 4), dtype=np.uint8, buffer=self.buf)
-
-
+            self.python_shm = shared_memory.SharedMemory(name=PYTHON_SHM_NAME, create=True, size=total_size)
+            self.shm_array = np.ndarray((width, height, channels), dtype=np.uint8, buffer=self.python_shm.buf[HEADER_SIZE:])
+            self.python_shm.buf[:HEADER_SIZE] = struct.pack(HEADER_FORMAT, height, width)
         self.shm_array[:] = img_array
 
         print(f"Sent image {width}x{height} to OBS")
