@@ -11,21 +11,6 @@ import numpy as np
 from PIL import Image
 
 
-def clean_deck_list(deck_list, classes):
-    deck_card_id = []
-    class_to_idx = {cls_name: i for i, cls_name in enumerate(classes)}
-
-    for card_id in deck_list:
-        if card_id[0] in '0123456789':
-            for card_name in class_to_idx.keys():
-                if card_id[0] == '0':
-                    if card_id[1:] in card_name:
-                        deck_card_id.append(class_to_idx[card_name])
-                if card_id in card_name:
-                    deck_card_id.append(class_to_idx[card_name])
-    return list(set(deck_card_id))
-
-
 def extract_contours(roi, d, sigma_color, sigma_space, thresh):
     gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
     gray = cv2.bilateralFilter(gray, d, sigma_color, sigma_space)
@@ -92,43 +77,8 @@ def get_rotation(boxes, box_txt):
     return rotation
 
 
-def show(im, p="draw2"):
-    """Display an image in a window."""
-    if platform.system() == "Linux":
-        cv2.namedWindow(p, cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO)  # allow window resize (Linux)
-        cv2.resizeWindow(p, im.shape[1], im.shape[0])  # (width, height)
-    cv2.imshow(p, im)
-    cv2.waitKey(1)  # 1 millisecond
-
-
-def save(is_image, outputs, video_writer, save_path):
-    if is_image:
-        cv2.imwrite(f"{save_path}.png", outputs['image'])
-    else:
-        video_writer.write(outputs['image'])
-
-
 def get_cache_dir():
     return Path(os.getenv("XDG_CACHE_HOME", Path.home() / ".cache")) / "draw2"
-
-
-def clear_cache():
-    cache_dir = get_cache_dir()
-    if cache_dir.exists():
-        shutil.rmtree(cache_dir)
-
-
-def parse_deck_name(console_entry):
-    message = console_entry.get('message', '')
-    if not message or '\\"action\\":\\"Success\\"' not in message:
-        return ''
-    pattern = '\\"name\\":\\"'
-    start = message.find(pattern) + len(pattern)
-    message = message[start:]
-    pattern = '\\",'
-    end = message.find(pattern)
-    message = message[:end]
-    return message
 
 
 def parse_deck_list(message, dl):
@@ -167,6 +117,3 @@ def read_shared_frame(buf, header_size, header_format):
 
     img = Image.fromarray(frame_array, mode="RGBA").convert("RGB")
     return img
-
-
-

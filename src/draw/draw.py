@@ -16,7 +16,7 @@ import cv2
 from transformers import AutoImageProcessor, pipeline
 from ultralytics import YOLO
 
-from draw import utils
+from . import utils
 
 
 def download_file(url, destination):
