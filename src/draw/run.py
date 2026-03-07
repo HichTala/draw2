@@ -115,8 +115,11 @@ class DrawSharedMemoryHandler:
 
     def display_card(self, outputs):
         for label in outputs['predictions']:
-            if label in self.displayed and time.time() - self.displayed[label] > self.minimum_out_of_screen_time:
-                del self.displayed[label]
+            if label in self.displayed:
+                if time.time() - self.displayed[label] > self.minimum_out_of_screen_time:
+                    del self.displayed[label]
+                    if label not in self.queue:
+                        self.queue.append(label)
             elif label not in self.queue:
                 self.queue.append(label)
 
