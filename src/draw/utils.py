@@ -1,9 +1,6 @@
 import math
 import os
-import platform
-import shutil
 import struct
-from multiprocessing import shared_memory
 from pathlib import Path
 
 import cv2
