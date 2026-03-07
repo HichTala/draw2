@@ -65,6 +65,9 @@ class DrawSharedMemoryHandler:
             except KeyboardInterrupt:
                 return
             break
+        if not continue_execution:
+            print("OBS stopped before it could start.")
+            return
 
         print(f"Shared memory found")
         if sys.platform == 'win32':
@@ -92,13 +95,12 @@ class DrawSharedMemoryHandler:
                 continue
 
             try:
-                results = self.draw.model_regression.track(
+                results = self.draw.model_regression.predict(
                     source=image,
                     show_labels=False,
                     save=False,
                     device=self.draw.device,
-                    verbose=False,
-                    persist=True
+                    verbose=False
                 )
                 for result in results:
                     outputs = self.draw.process(result)
@@ -113,9 +115,13 @@ class DrawSharedMemoryHandler:
 
     def display_card(self, outputs):
         for label in outputs['predictions']:
-            if label not in self.counts:
-                self.counts[label] = 0
-            self.counts[label] += 1
+            if label in self.displayed:
+                if time.time() - self.displayed[label] > self.minimum_out_of_screen_time:
+                    del self.displayed[label]
+                    if label not in self.queue:
+                        self.queue.append(label)
+            elif label not in self.queue:
+                self.queue.append(label)
 
         if len(self.queue) and time.time() - self.displayed_time > self.minimum_screen_time:
             label = self.queue.popleft()
@@ -123,22 +129,6 @@ class DrawSharedMemoryHandler:
             self.displayed_time = time.time()
             image = self.draw.dataset[int(self.draw.label2id[label])]["image"]
             self.send_image_to_obs(image)
-
-        for label, count in self.counts.items():
-            if count > 20:
-                if label not in self.displayed:
-                    if time.time() - self.displayed_time > self.minimum_screen_time:
-                        self.displayed[label] = time.time()
-                        self.displayed_time = time.time()
-                        image = self.draw.dataset[int(self.draw.label2id[label])]["image"]
-                        self.send_image_to_obs(image)
-                    else:
-                        if label not in self.queue:
-                            self.queue.append(label)
-                else:
-                    if time.time() - self.displayed[label] > self.minimum_out_of_screen_time:
-                        del self.displayed[label]
-                        self.counts[label] = 0
 
     def send_image_to_obs(self, image):
         img_array = np.array(image.convert("RGBA"))
@@ -161,11 +151,13 @@ class DrawSharedMemoryHandler:
                 self.python_shm.close()
                 self.python_shm.unlink()
             self.python_shm = shared_memory.SharedMemory(name=PYTHON_SHM_NAME, create=True, size=total_size)
-            self.shm_array = np.ndarray((height, width, channels), dtype=np.uint8, buffer=self.python_shm.buf[HEADER_SIZE:])
+            self.shm_array = np.ndarray((height, width, channels), dtype=np.uint8,
+                                        buffer=self.python_shm.buf[HEADER_SIZE:])
             self.python_shm.buf[:HEADER_SIZE] = struct.pack(HEADER_FORMAT, width, height)
         self.shm_array[:] = img_array
 
         print(f"Sent image {width}x{height} to OBS")
+
 
 def close_shared_memory(shm):
     if sys.platform == 'win32':
@@ -175,6 +167,7 @@ def close_shared_memory(shm):
         if shm is not None:
             shm.close()
             shm.unlink()
+
 
 def run(
         stop_flag=None,
@@ -228,6 +221,6 @@ if __name__ == '__main__':
 
         logging.info("Python subprocess started")
         print("print() is real-time now")
-
+    sys.stderr = sys.stdout
     print("run")
     run()

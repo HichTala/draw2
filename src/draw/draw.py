@@ -63,54 +63,52 @@ class Draw:
     def process(self, result):
         outputs = {'predictions': []}
 
-        if result.obb.id is not None:
-            for nbox, boxe in enumerate(result.obb.xyxyxyxyn):
-                boxe = np.float32(
-                    [[b[0] * result.orig_img.shape[1], b[1] * result.orig_img.shape[0]] for b in boxe.cpu()]
-                )
-                obb = np.intp(boxe)
-                xy1, _, xy2, _ = obb
+        for nbox, boxe in enumerate(result.obb.xyxyxyxyn):
+            boxe = np.float32(
+                [[b[0] * result.orig_img.shape[1], b[1] * result.orig_img.shape[0]] for b in boxe.cpu()]
+            )
+            obb = np.intp(boxe)
 
-                output_pts = np.float32([
-                    [224, 224],
-                    [224, 0],
-                    [0, 0],
-                    [0, 224]
-                ])
-                perspective_transform = cv2.getPerspectiveTransform(boxe, output_pts)
-                roi = cv2.warpPerspective(
-                    result.orig_img, perspective_transform, (224, 224), flags=cv2.INTER_LINEAR
-                )
-                contours = utils.extract_contours(
-                    roi,
-                    d=self.configs["bilateral_filter_d"],
-                    sigma_color=self.configs["bilateral_filter_sigma_color"],
-                    sigma_space=self.configs["bilateral_filter_sigma_space"],
-                    thresh=self.configs["txt_box_contour_threshold"]
-                )
+            output_pts = np.float32([
+                [224, 224],
+                [224, 0],
+                [0, 0],
+                [0, 224]
+            ])
+            perspective_transform = cv2.getPerspectiveTransform(boxe, output_pts)
+            roi = cv2.warpPerspective(
+                result.orig_img, perspective_transform, (224, 224), flags=cv2.INTER_LINEAR
+            )
+            contours = utils.extract_contours(
+                roi,
+                d=self.configs["bilateral_filter_d"],
+                sigma_color=self.configs["bilateral_filter_sigma_color"],
+                sigma_space=self.configs["bilateral_filter_sigma_space"],
+                thresh=self.configs["txt_box_contour_threshold"]
+            )
 
-                if contours != ():
-                    contour = contours[np.array(list(map(cv2.contourArea, contours))).argmax()]
-                    box_txt, txt_aspect_ratio = utils.get_txt(contour)
+            if contours != ():
+                contour = contours[np.array(list(map(cv2.contourArea, contours))).argmax()]
+                box_txt, txt_aspect_ratio = utils.get_txt(contour)
 
-                    rotation = utils.get_rotation(boxes=result.obb.xywhr[nbox], box_txt=box_txt)
-                    if rotation is None:
-                        break
+                rotation = utils.get_rotation(boxes=result.obb.xywhr[nbox], box_txt=box_txt)
+                if rotation is None:
+                    break
 
-                    if rotation != 0:
-                        roi = cv2.rotate(roi, rotation)
+                if rotation != 0:
+                    roi = cv2.rotate(roi, rotation)
 
-                    roi = cv2.cvtColor(roi, cv2.COLOR_BGR2RGB)
-                    roi = Image.fromarray(roi)
+                roi = cv2.cvtColor(roi, cv2.COLOR_BGR2RGB)
+                roi = Image.fromarray(roi)
 
-                    output = self.classifier(roi, top_k=15)
-                    if output[0]['score'] >= self.confidence_threshold / 100:
-                        if len(self.decklist) == 0:
-                            outputs['predictions'].append(output[0]['label'])
-                        else:
-                            for label in output:
-                                label = label['label']
-                                if label.split('-')[-1] in self.decklist:
-                                    outputs['predictions'].append(label)
-                                    break
+                output = self.classifier(roi, top_k=15)
+                if output[0]['score'] >= self.confidence_threshold / 100:
+                    if len(self.decklist) == 0:
+                        outputs['predictions'].append(output[0]['label'])
+                    else:
+                        for label in output:
+                            label = label['label']
+                            if label.split('-')[-1] in self.decklist:
+                                outputs['predictions'].append(label)
+                                break
         return outputs
