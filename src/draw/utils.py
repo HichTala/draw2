@@ -81,21 +81,6 @@ def get_cache_dir():
     return Path(os.getenv("XDG_CACHE_HOME", Path.home() / ".cache")) / "draw2"
 
 
-def parse_deck_list(message, dl):
-    pattern = '\\"serial_number\\":\\"'
-    if pattern not in message:
-        return dl
-    start = message.find(pattern) + len(pattern)
-    message = message[start:]
-    pattern = '\\",'
-    end = message.find(pattern)
-    serial_number = message[:end]
-    dl.append(serial_number)
-
-    message = message[end:]
-    return parse_deck_list(message, dl)
-
-
 def get_deck_list(deck_lists):
     returned_deck_lists = []
     for deck_list in deck_lists.split(";"):
