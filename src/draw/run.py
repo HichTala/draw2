@@ -65,6 +65,9 @@ class DrawSharedMemoryHandler:
             except KeyboardInterrupt:
                 return
             break
+        if not continue_execution:
+            print("OBS stopped before it could start.")
+            return
 
         print(f"Shared memory found")
         if sys.platform == 'win32':
