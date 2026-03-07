@@ -19,12 +19,6 @@ from ultralytics import YOLO
 from . import utils
 
 
-def download_file(url, destination):
-    response = requests.get(url)
-    with open(destination, 'wb') as file:
-        file.write(response.content)
-
-
 class Draw:
     def __init__(self, deck_lists=None, confidence_threshold=5):
         self.decklist = []
