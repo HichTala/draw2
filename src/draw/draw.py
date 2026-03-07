@@ -68,7 +68,6 @@ class Draw:
                 [[b[0] * result.orig_img.shape[1], b[1] * result.orig_img.shape[0]] for b in boxe.cpu()]
             )
             obb = np.intp(boxe)
-            xy1, _, xy2, _ = obb
 
             output_pts = np.float32([
                 [224, 224],
