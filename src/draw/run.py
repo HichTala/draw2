@@ -6,8 +6,8 @@ from multiprocessing import shared_memory
 import mmap
 
 import numpy as np
-from .draw import Draw
-from .utils import read_shared_frame, get_deck_list
+from draw.draw import Draw
+from draw.utils import read_shared_frame, get_deck_list
 
 import os
 import sys
