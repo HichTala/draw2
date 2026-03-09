@@ -4,8 +4,8 @@ import time
 from collections import deque
 from multiprocessing import shared_memory
 import mmap
-
 import numpy as np
+
 from draw.draw import Draw
 from draw.utils import read_shared_frame, get_deck_list
 
@@ -33,7 +33,6 @@ if sys.platform == 'win32':
     sys.stderr = log_file
 
     logging.info("Python subprocess started")
-    print("print() is real-time now")
 
 OBS_SHM_NAME = "obs_shared_memory"
 PYTHON_SHM_NAME = "python_shared_memory"
@@ -42,7 +41,7 @@ HEADER_SIZE = struct.calcsize(HEADER_FORMAT)
 
 MAX_FRAME_WIDTH = 3840
 MAX_FRAME_HEIGHT = 2160
-BYTES_PER_PIXEL = 4  # RGBA8
+BYTES_PER_PIXEL = 4
 FRAME_BUFFER_SIZE = MAX_FRAME_WIDTH * MAX_FRAME_HEIGHT * BYTES_PER_PIXEL
 
 SIZE = HEADER_SIZE + FRAME_BUFFER_SIZE
@@ -154,7 +153,6 @@ class DrawSharedMemoryHandler:
 
     def send_image_to_obs(self, image):
         img_array = np.array(image.convert("RGBA"))
-        print(image.size)
         height, width, channels = img_array.shape
 
         total_size = HEADER_SIZE + img_array.nbytes
