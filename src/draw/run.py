@@ -4,14 +4,35 @@ import time
 from collections import deque
 from multiprocessing import shared_memory
 import mmap
-
 import numpy as np
-from .draw import Draw
-from .utils import read_shared_frame, get_deck_list
+
+from draw.draw import Draw
+from draw.utils import read_shared_frame, get_deck_list
 
 import os
 import sys
 import logging
+
+if sys.platform == 'win32':
+    log_dir = os.path.join(os.environ["APPDATA"], "obs-studio")
+    os.makedirs(log_dir, exist_ok=True)
+
+    log_path = os.path.join(log_dir, "python_subprocess.log")
+
+    # --- logging (flushes immediately) ---
+    logging.basicConfig(
+        filename=log_path,
+        level=logging.DEBUG,
+        format="%(asctime)s [%(levelname)s] %(message)s",
+        force=True,  # important if logging was configured before
+    )
+
+    # --- redirect print() too ---
+    log_file = open(log_path, "a", buffering=1)  # line-buffered
+    sys.stdout = log_file
+    sys.stderr = log_file
+
+    logging.info("Python subprocess started")
 
 OBS_SHM_NAME = "obs_shared_memory"
 PYTHON_SHM_NAME = "python_shared_memory"
@@ -20,7 +41,7 @@ HEADER_SIZE = struct.calcsize(HEADER_FORMAT)
 
 MAX_FRAME_WIDTH = 3840
 MAX_FRAME_HEIGHT = 2160
-BYTES_PER_PIXEL = 4  # RGBA8
+BYTES_PER_PIXEL = 4
 FRAME_BUFFER_SIZE = MAX_FRAME_WIDTH * MAX_FRAME_HEIGHT * BYTES_PER_PIXEL
 
 SIZE = HEADER_SIZE + FRAME_BUFFER_SIZE
@@ -132,7 +153,6 @@ class DrawSharedMemoryHandler:
 
     def send_image_to_obs(self, image):
         img_array = np.array(image.convert("RGBA"))
-        print(image.size)
         height, width, channels = img_array.shape
 
         total_size = HEADER_SIZE + img_array.nbytes
@@ -146,7 +166,7 @@ class DrawSharedMemoryHandler:
             python_buf = memoryview(self.python_shm)
             self.shm_array = np.ndarray((height, width, channels), dtype=np.uint8, buffer=python_buf[HEADER_SIZE:])
             python_buf[:HEADER_SIZE] = struct.pack(HEADER_FORMAT, width, height)
-        elif self.python_shm is None or total_size != self.python_shm.size:
+        elif sys.platform != 'win32' and (self.python_shm is None or total_size != self.python_shm.size):
             if self.python_shm is not None:
                 self.python_shm.close()
                 self.python_shm.unlink()
@@ -200,27 +220,4 @@ def run(
 
 
 if __name__ == '__main__':
-    if sys.platform == 'win32':
-        log_dir = os.path.join(os.environ["APPDATA"], "obs-studio")
-        os.makedirs(log_dir, exist_ok=True)
-
-        log_path = os.path.join(log_dir, "python_subprocess.log")
-
-        # --- logging (flushes immediately) ---
-        logging.basicConfig(
-            filename=log_path,
-            level=logging.DEBUG,
-            format="%(asctime)s [%(levelname)s] %(message)s",
-            force=True,  # important if logging was configured before
-        )
-
-        # --- redirect print() too ---
-        log_file = open(log_path, "a", buffering=1)  # line-buffered
-        sys.stdout = log_file
-        sys.stderr = log_file
-
-        logging.info("Python subprocess started")
-        print("print() is real-time now")
-    sys.stderr = sys.stdout
-    print("run")
     run()
