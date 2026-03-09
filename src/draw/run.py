@@ -146,7 +146,7 @@ class DrawSharedMemoryHandler:
             python_buf = memoryview(self.python_shm)
             self.shm_array = np.ndarray((height, width, channels), dtype=np.uint8, buffer=python_buf[HEADER_SIZE:])
             python_buf[:HEADER_SIZE] = struct.pack(HEADER_FORMAT, width, height)
-        elif self.python_shm is None or total_size != self.python_shm.size:
+        elif sys.platform != 'win32' and (self.python_shm is None or total_size != self.python_shm.size):
             if self.python_shm is not None:
                 self.python_shm.close()
                 self.python_shm.unlink()
