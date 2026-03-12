@@ -192,26 +192,39 @@ def close_shared_memory(shm):
 def run(
         stop_flag=None,
         model_ready=None,
+        update_flag=None,
         deck_list="",
         minimum_out_of_screen_time=25,
         minimum_screen_time=6,
         confidence_threshold=5
 ):
-    sh_memory_handler = DrawSharedMemoryHandler(
-        deck_list=deck_list,
-        minimum_out_of_screen_time=minimum_out_of_screen_time,
-        minimum_screen_time=minimum_screen_time,
-        confidence_threshold=confidence_threshold
-    )
-
-    if stop_flag is not None and model_ready is not None:
+    print("Starting Draw2...")
+    if stop_flag is not None and model_ready is not None and update_flag is not None:
         addr = ctypes.cast(ctypes.pythonapi.PyCapsule_GetPointer(stop_flag, b"stop_flag"),
                            ctypes.POINTER(ctypes.c_bool))
         ready_ptr = ctypes.cast(ctypes.pythonapi.PyCapsule_GetPointer(model_ready, b"model_ready"),
                                 ctypes.POINTER(ctypes.c_bool))
+        update_ptr = ctypes.cast(ctypes.pythonapi.PyCapsule_GetPointer(update_flag, b"update_flag"),
+                                ctypes.POINTER(ctypes.c_bool))
+
+        update_ptr.contents.value = True
+        sh_memory_handler = DrawSharedMemoryHandler(
+            deck_list=deck_list,
+            minimum_out_of_screen_time=minimum_out_of_screen_time,
+            minimum_screen_time=minimum_screen_time,
+            confidence_threshold=confidence_threshold
+        )
+        update_ptr.contents.value = False
+
         print("Running Draw2 with OBS shared memory")
         sh_memory_handler(address=addr, ready_ptr=ready_ptr)
     else:
+        sh_memory_handler = DrawSharedMemoryHandler(
+            deck_list=deck_list,
+            minimum_out_of_screen_time=minimum_out_of_screen_time,
+            minimum_screen_time=minimum_screen_time,
+            confidence_threshold=confidence_threshold
+        )
         print("Running Draw2 without OBS shared memory")
         sh_memory_handler()
 
