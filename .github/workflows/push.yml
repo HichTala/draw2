@@ -14,15 +14,15 @@ jobs:
 
       - name: Download Python zip file 🐍
         run: |
-          curl -L https://github.com/HichTala/draw2/releases/download/embedded-python/python-3.12.9-embed-amd64.zip -o python.zip
-          unzip python.zip -d python
-          rm python.zip
-          rm python/Lib/site-packages/draw/*
+          curl -L https://github.com/HichTala/draw2/releases/download/embedded-python/python-3.12.9-embed-amd64.zip -o python-3.12.9-embed-amd64.zip
+          unzip python-3.12.9-embed-amd64.zip
+          rm python-3.12.9-embed-amd64.zip
+          rm python-3.12.9-embed-amd64/Lib/site-packages/draw/*
 
       - name: Copy Draw 2 files 📁
         run: |
-          cp -r src/draw/* python/Lib/site-packages/draw/
-          zip -r python-3.12.9-embed-amd64.zip python
+          cp -r src/draw/* python-3.12.9-embed-amd64/Lib/site-packages/draw/
+          zip -r python-3.12.9-embed-amd64.zip python-3.12.9-embed-amd64
 
       - name: Upload artifact 📤
         uses: actions/upload-artifact@v7
