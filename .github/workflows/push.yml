@@ -40,7 +40,7 @@ jobs:
       - name: Download artifacts 🏺
         uses: actions/download-artifact@v8
         with:
-          path: python-3.12.9-embed-amd64.zip
+          path: .
 
       - name: Create Release 🏷️
         uses: softprops/action-gh-release@v2
