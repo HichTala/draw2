@@ -40,12 +40,13 @@ jobs:
       - name: Download artifacts 🏺
         uses: actions/download-artifact@v8
         with:
+          name: python-3.12.9-embed-amd64.zip
           path: .
 
       - name: Create Release 🏷️
         uses: softprops/action-gh-release@v2
         with:
           tag_name: embedded-python
-          files: .
+          files: ./python-3.12.9-embed-amd64.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
