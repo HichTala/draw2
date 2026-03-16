@@ -14,7 +14,7 @@ jobs:
 
       - name: Download Python zip file 🐍
         run: |
-          curl https://github.com/HichTala/draw2/releases/download/embedded-python/python-3.12.9-embed-amd64.zip -o python-3.12.9-embed-amd64.zip
+          curl https://github.com/HichTala/draw2/releases/download/embedded-python/python-3.12.9-embed-amd64.zip -o python.zip
           unzip python.zip -d python
           rm python.zip
           rm python/Lib/site-packages/draw/*
