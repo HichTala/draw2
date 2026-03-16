@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code ✅
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
 
       - name: Download Python zip file 🐍
         run: |
@@ -28,7 +28,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: python-3.12.9-embed-amd64.zip
-          path: python-3.12.9-embed-amd64.zip
+          path: .
 
   release:
     needs: build
@@ -46,6 +46,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: embedded-python
-          files: python-3.12.9-embed-amd64.zip
+          files: ./python-3.12.9-embed-amd64.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
