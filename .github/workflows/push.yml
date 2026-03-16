@@ -1,0 +1,51 @@
+name: CI
+run-name: ${{ github.ref_name }} push run 🚀
+on:
+  push:
+    branches:
+      - obs-plugin
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code ✅
+        uses: actions/checkout@v3
+
+      - name: Download Python zip file 🐍
+        run: |
+          curl -L -o https://github.com/HichTala/draw2/releases/download/embedded-python/python-3.12.9-embed-amd64.zip
+          unzip python.zip -d python
+          rm python.zip
+          rm python/Lib/site-packages/draw/*
+
+      - name: Copy Draw 2 files 📁
+        run: |
+          cp -r src/draw/* python/Lib/site-packages/draw/
+          zip -r python-3.12.9-embed-amd64.zip python
+
+      - name: Upload artifact 📤
+        uses: actions/upload-artifact@v7
+        with:
+          name: python-3.12.9-embed-amd64.zip
+          path: python-3.12.9-embed-amd64.zip
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download artifacts 🏺
+        uses: actions/download-artifact@v8
+        with:
+          path: python-3.12.9-embed-amd64.zip
+
+      - name: Create Release 🏷️
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: embedded-python
+          files: python-3.12.9-embed-amd64.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
