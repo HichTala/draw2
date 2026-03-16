@@ -46,6 +46,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: embedded-python
-          files: ./python-3.12.9-embed-amd64.zip
+          files: .
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
