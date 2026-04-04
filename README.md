@@ -1,6 +1,6 @@
 <div align="center">
     <p>
-        <img src="figures/banner-draw.png">
+        <img src="figures/banner-draw.png" alt="Banner of DRAW2 project">
     </p>
 
 
@@ -14,7 +14,7 @@
 [![WandB](https://img.shields.io/badge/visualize_in-W%26B-yellow?logo=weightsandbiases&color=%23FFBE00)](https://wandb.ai/hich_/draw)
 [![Medium](https://img.shields.io/badge/-Medium-12100E?style=flat&logo=medium&labelColor=555)](https://medium.com/@hich.tala.phd/how-i-trained-again-my-model-to-detect-and-recognise-a-wide-range-of-yu-gi-oh-cards-5c567a320b0a)
 
-[🇫🇷 Français](README_fr.md)
+[🇫🇷 Français](readmes/README_fr.md) | [🇯🇵 日本語](readmes/README_jp.md)
 
 
 </div>
@@ -30,7 +30,7 @@ detector directly into their live streams or recorded videos; and those **withou
 The plugin can display detected cards in real time for an enhanced viewing experience.
 (this a third party plugin for OBS Studio. It is not affiliated with or endorsed by the OBS Project)
 
-Other works exist (see [Related Works](#div-aligncenterrelated-worksdiv)) but none is capable of recognizing cards
+Other works exist (see [Related Works](#related-works)) but none is capable of recognizing cards
 during a duel.
 
 This project is licensed under the [GNU Affero General Public License v3.0](LICENCE); all contributions are welcome.
