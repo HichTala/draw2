@@ -49,7 +49,6 @@ SIZE = HEADER_SIZE + FRAME_BUFFER_SIZE
 
 class DrawSharedMemoryHandler:
     def __init__(self, model="HichTala/draw2", deck_list="", minimum_out_of_screen_time=25, minimum_screen_time=6, confidence_threshold=5):
-        print(model)
         self.draw = Draw(model=model, deck_lists=get_deck_list(deck_list), confidence_threshold=confidence_threshold)
 
         self.obs_shm = None
