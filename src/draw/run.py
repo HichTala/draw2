@@ -48,8 +48,8 @@ SIZE = HEADER_SIZE + FRAME_BUFFER_SIZE
 
 
 class DrawSharedMemoryHandler:
-    def __init__(self, model="HichTala/draw2", deck_list="", minimum_out_of_screen_time=25, minimum_screen_time=6, confidence_threshold=5):
-        self.draw = Draw(model=model, deck_lists=get_deck_list(deck_list), confidence_threshold=confidence_threshold)
+    def __init__(self, model_id="HichTala/draw2", deck_list="", minimum_out_of_screen_time=25, minimum_screen_time=6, confidence_threshold=5):
+        self.draw = Draw(model=model_id, deck_lists=get_deck_list(deck_list), confidence_threshold=confidence_threshold)
 
         self.obs_shm = None
         self.python_shm = None
@@ -193,7 +193,7 @@ def run(
         stop_flag=None,
         model_ready=None,
         update_flag=None,
-        model="Base",
+        model_size="Base",
         deck_list="",
         minimum_out_of_screen_time=25,
         minimum_screen_time=6,
@@ -210,7 +210,7 @@ def run(
 
         update_ptr.contents.value = True
         sh_memory_handler = DrawSharedMemoryHandler(
-            model={"Base": "HichTala/draw2", "Large": "HichTala/draw2-large"}[model],
+            model_id={"Base": "HichTala/draw2", "Large": "HichTala/draw2-large"}[model_size],
             deck_list=deck_list,
             minimum_out_of_screen_time=minimum_out_of_screen_time,
             minimum_screen_time=minimum_screen_time,
