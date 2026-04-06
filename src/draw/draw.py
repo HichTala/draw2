@@ -3,7 +3,6 @@ import json
 import sys
 
 import numpy as np
-import requests
 import torch
 from PIL import Image
 from datasets import load_dataset
@@ -20,7 +19,7 @@ from . import utils
 
 
 class Draw:
-    def __init__(self, deck_lists=None, confidence_threshold=5):
+    def __init__(self, model, deck_lists=None, confidence_threshold=5):
         self.decklist = []
         if deck_lists is not None:
             for deck_list in deck_lists:
@@ -41,7 +40,7 @@ class Draw:
         )
         self.classifier = pipeline(
             "image-classification",
-            model="HichTala/draw2",
+            model=model,
             image_processor=image_processor,
             device_map=self.device
         )
