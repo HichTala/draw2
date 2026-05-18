@@ -190,7 +190,8 @@ def main(args):
     image_types = ["bmp", "dng", "HEIC", "jpeg", "jpg", "mpo", "pfm", "png", "tif", "tiff", "webp"]
     if args.save and args.source is not None and args.source.split('.')[-1] in image_types:
         is_image = True
-        save_path = args.save if args.save.split(".")[-1] in image_types else "output.png"
+        video_writer = False
+        save_path = args.save if args.save.split(".")[-1] in image_types else "output"
 
     if args.save and not is_image:
         video_types = ["asf", "avi", "gif", "m4v", "mov", "mp4", "mpeg", "mpg", "ts", "wmv", "webm"]
