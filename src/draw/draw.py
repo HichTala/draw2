@@ -1,4 +1,5 @@
 import json
+import os
 
 import cv2
 import numpy as np
@@ -62,8 +63,12 @@ class Draw:
 
         self.confidence_threshold = confidence_threshold
 
-    def process(self, result, show=False, display=False):
+    def process(self, result, show=False, display=False, language='EN'):
         outputs = {}
+
+        cardnames_path = os.path.join(os.path.dirname(__file__), "cardnames.json")
+        with open(cardnames_path, "r", encoding="utf-8") as f:
+            cardnames = json.load(f)
 
         if display:
             outputs['predictions'] = []
@@ -120,7 +125,8 @@ class Draw:
                         if display:
                             outputs['predictions'].append(output[0]['label'])
                         if show:
-                            cv2.putText(outputs['image'], ' '.join(output[0]['label'].split('-')[:-1]),
+                            card_id = output[0]['label'].split('-')[-1]
+                            cv2.putText(outputs['image'], cardnames[card_id][language],
                                         (xy1[0], xy1[1]),
                                         cv2.FONT_HERSHEY_PLAIN,
                                         1.0,
@@ -134,7 +140,8 @@ class Draw:
                                 if display:
                                     outputs['predictions'].append(output[0]['label'])
                                 if show:
-                                    cv2.putText(outputs['image'], ' '.join(output[0]['label'].split('-')[:-1]),
+                                    card_id = output[0]['label'].split('-')[-1]
+                                    cv2.putText(outputs['image'], cardnames[card_id][language],
                                                 (xy1[0], xy1[1]),
                                                 cv2.FONT_HERSHEY_PLAIN,
                                                 1.0,

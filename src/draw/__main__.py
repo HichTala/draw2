@@ -40,6 +40,9 @@ def parse_command_line():
     parser.add_argument('--fps', default=60, type=int,
                         help="FPS of the saved video.")
 
+    parser.add_argument('--language', default='EN', type=str,
+                        help="Language for card names (e.g. EN, FR, DE, IT, PT). Default: EN.")
+
     return parser.parse_args()
 
 
@@ -216,7 +219,7 @@ def main(args):
 
     try:
         for result in draw.results:
-            outputs = draw.process(result, show=args.show, display=args.display_card)
+            outputs = draw.process(result, show=args.show, display=args.display_card, language=args.language)
 
             if args.show:
                 show(outputs['image'])
