@@ -126,7 +126,8 @@ class Draw:
                             outputs['predictions'].append(output[0]['label'])
                         if show:
                             card_id = output[0]['label'].split('-')[-1]
-                            cv2.putText(outputs['image'], cardnames[card_id][language],
+                            card_name = cardnames.get(card_id, {}).get(language) or ' '.join(output[0]['label'].split('-')[:-1])
+                            cv2.putText(outputs['image'], card_name,
                                         (xy1[0], xy1[1]),
                                         cv2.FONT_HERSHEY_PLAIN,
                                         1.0,
@@ -141,7 +142,8 @@ class Draw:
                                     outputs['predictions'].append(output[0]['label'])
                                 if show:
                                     card_id = output[0]['label'].split('-')[-1]
-                                    cv2.putText(outputs['image'], cardnames[card_id][language],
+                                    card_name = cardnames.get(card_id, {}).get(language) or ' '.join(output[0]['label'].split('-')[:-1])
+                                    cv2.putText(outputs['image'], card_name,
                                                 (xy1[0], xy1[1]),
                                                 cv2.FONT_HERSHEY_PLAIN,
                                                 1.0,
