@@ -193,12 +193,13 @@ def run(
         stop_flag=None,
         model_ready=None,
         update_flag=None,
-        model_size="Base",
+        model_size=0,
         deck_list="",
         minimum_out_of_screen_time=25,
         minimum_screen_time=6,
         confidence_threshold=5
 ):
+    print(model_size)
     print("Starting Draw2...")
     if stop_flag is not None and model_ready is not None and update_flag is not None:
         addr = ctypes.cast(ctypes.pythonapi.PyCapsule_GetPointer(stop_flag, b"stop_flag"),
@@ -210,7 +211,7 @@ def run(
 
         update_ptr.contents.value = True
         sh_memory_handler = DrawSharedMemoryHandler(
-            model_id={"Base": "HichTala/draw2", "Large": "HichTala/draw2-large"}[model_size],
+            model_id=["HichTala/draw2", "HichTala/draw2-large"][model_size],
             deck_list=deck_list,
             minimum_out_of_screen_time=minimum_out_of_screen_time,
             minimum_screen_time=minimum_screen_time,
