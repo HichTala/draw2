@@ -28,7 +28,7 @@ if sys.platform == 'win32':
     )
 
     # --- redirect print() too ---
-    log_file = open(log_path, "a", buffering=1)  # line-buffered
+    log_file = open(log_path, "w", buffering=1)  # line-buffered
     sys.stdout = log_file
     sys.stderr = log_file
 
@@ -199,7 +199,6 @@ def run(
         minimum_screen_time=6,
         confidence_threshold=5
 ):
-    print(model_size)
     print("Starting Draw2...")
     if stop_flag is not None and model_ready is not None and update_flag is not None:
         addr = ctypes.cast(ctypes.pythonapi.PyCapsule_GetPointer(stop_flag, b"stop_flag"),
