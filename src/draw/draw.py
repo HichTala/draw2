@@ -30,9 +30,12 @@ class Draw:
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
         config = hf_hub_download(repo_id="HichTala/draw2", filename="draw_config.json")
+        cardnames_path = hf_hub_download(repo_id="HichTala/draw2", filename="cardnames.json")
+        yolo_path = hf_hub_download(repo_id="HichTala/draw2", filename="ygo_yolo.pt")
         with open(config, "rb") as f:
             self.configs = json.load(f)
-        yolo_path = hf_hub_download(repo_id="HichTala/draw2", filename="ygo_yolo.pt")
+        with open(cardnames_path, "rb") as f:
+            self.cardnames = json.load(f)
 
         model_regression = YOLO(yolo_path)
         self.results = model_regression.predict(
@@ -65,10 +68,6 @@ class Draw:
 
     def process(self, result, show=False, display=False, language='EN'):
         outputs = {}
-
-        cardnames_path = os.path.join(os.path.dirname(__file__), "cardnames.json")
-        with open(cardnames_path, "r", encoding="utf-8") as f:
-            cardnames = json.load(f)
 
         if display:
             outputs['predictions'] = []
@@ -126,7 +125,7 @@ class Draw:
                             outputs['predictions'].append(output[0]['label'])
                         if show:
                             card_id = output[0]['label'].split('-')[-1]
-                            card_name = cardnames.get(card_id, {}).get(language) or ' '.join(output[0]['label'].split('-')[:-1])
+                            card_name = self.cardnames.get(card_id, {}).get(language) or ' '.join(output[0]['label'].split('-')[:-1])
                             cv2.putText(outputs['image'], card_name,
                                         (xy1[0], xy1[1]),
                                         cv2.FONT_HERSHEY_PLAIN,
@@ -142,7 +141,7 @@ class Draw:
                                     outputs['predictions'].append(output[0]['label'])
                                 if show:
                                     card_id = output[0]['label'].split('-')[-1]
-                                    card_name = cardnames.get(card_id, {}).get(language) or ' '.join(output[0]['label'].split('-')[:-1])
+                                    card_name = self.cardnames.get(card_id, {}).get(language) or ' '.join(output[0]['label'].split('-')[:-1])
                                     cv2.putText(outputs['image'], card_name,
                                                 (xy1[0], xy1[1]),
                                                 cv2.FONT_HERSHEY_PLAIN,
