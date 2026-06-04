@@ -1,0 +1,1 @@
+By adding Bot of Greed to your Discord server, you agree to use it in compliance with Discord's Terms of Service. The bot is provided as-is, without warranty of any kind. The author reserves the right to modify or discontinue the service at any time without notice. Misuse of the bot may result in removal from your server without prior warning.
