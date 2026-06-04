@@ -1,4 +1,4 @@
-# Privacy Policy
+# Privacy Policy
 
 Bot of Greed collects and stores the following data to operate:
 
