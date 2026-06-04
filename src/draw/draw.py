@@ -34,8 +34,8 @@ class Draw:
         yolo_path = hf_hub_download(repo_id="HichTala/draw2", filename="ygo_yolo.pt")
         with open(config, "rb") as f:
             self.configs = json.load(f)
-        with open(cardnames_path, "rb") as f:
-            self.cardnames = json.load(f)
+        yolo_path = hf_hub_download(repo_id="HichTala/draw2", filename="ygo_yolo.pt")
+        self.cardnames_path = hf_hub_download(repo_id="HichTala/draw2", filename="cardnames.json")
 
         model_regression = YOLO(yolo_path)
         self.results = model_regression.predict(
@@ -68,6 +68,9 @@ class Draw:
 
     def process(self, result, show=False, display=False, language='EN'):
         outputs = {}
+
+        with open(self.cardnames_path, "r", encoding="utf-8") as f:
+            cardnames = json.load(f)
 
         if display:
             outputs['predictions'] = []
