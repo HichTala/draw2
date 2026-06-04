@@ -8,7 +8,19 @@ from pathlib import Path
 
 import cv2
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
+
+
+def put_text(img, text, position, font_scale=1.3, color=(255, 255, 255), thickness=3):
+    pil_img = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+    draw = ImageDraw.Draw(pil_img)
+    font_size = max(12, int(font_scale * 16))
+    try:
+        font = ImageFont.truetype("arial.ttf", font_size)
+    except IOError:
+        font = ImageFont.load_default()
+    draw.text(position, text, font=font, fill=(color[2], color[1], color[0]))
+    return cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
 
 
 def clean_deck_list(deck_list, classes):
