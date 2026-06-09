@@ -1,4 +1,5 @@
 import json
+import os
 
 import cv2
 import numpy as np
@@ -29,9 +30,12 @@ class Draw:
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
         config = hf_hub_download(repo_id="HichTala/draw2", filename="draw_config.json")
+        yolo_path = hf_hub_download(repo_id="HichTala/draw2", filename="ygo_yolo.pt")
+        cardnames_path = hf_hub_download(repo_id="HichTala/draw2", filename="cardnames.json")
         with open(config, "rb") as f:
             self.configs = json.load(f)
-        yolo_path = hf_hub_download(repo_id="HichTala/draw2", filename="ygo_yolo.pt")
+        with open(cardnames_path, "r", encoding="utf-8") as f:
+            self.cardnames = json.load(f)
 
         model_regression = YOLO(yolo_path)
         self.results = model_regression.predict(
@@ -62,7 +66,7 @@ class Draw:
 
         self.confidence_threshold = confidence_threshold
 
-    def process(self, result, show=False, display=False):
+    def process(self, result, show=False, display=False, language='EN'):
         outputs = {}
 
         if display:
@@ -120,12 +124,10 @@ class Draw:
                         if display:
                             outputs['predictions'].append(output[0]['label'])
                         if show:
-                            cv2.putText(outputs['image'], ' '.join(output[0]['label'].split('-')[:-1]),
-                                        (xy1[0], xy1[1]),
-                                        cv2.FONT_HERSHEY_PLAIN,
-                                        1.0,
-                                        (255, 255, 255),
-                                        2)
+                            card_id = output[0]['label'].split('-')[-1]
+                            card_name = self.cardnames.get(card_id, {}).get(language) or ' '.join(output[0]['label'].split('-')[:-1])
+                            outputs['image'] = utils.put_text(outputs['image'], card_name,
+                                        (xy1[0], xy1[1]))
 
                     else:
                         for label in output:
@@ -134,11 +136,9 @@ class Draw:
                                 if display:
                                     outputs['predictions'].append(output[0]['label'])
                                 if show:
-                                    cv2.putText(outputs['image'], ' '.join(output[0]['label'].split('-')[:-1]),
-                                                (xy1[0], xy1[1]),
-                                                cv2.FONT_HERSHEY_PLAIN,
-                                                1.0,
-                                                (255, 255, 255),
-                                                2)
+                                    card_id = output[0]['label'].split('-')[-1]
+                                    card_name = self.cardnames.get(card_id, {}).get(language) or ' '.join(output[0]['label'].split('-')[:-1])
+                                    outputs['image'] = utils.put_text(outputs['image'], card_name,
+                                                (xy1[0], xy1[1]))
                                 break
         return outputs

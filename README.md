@@ -90,6 +90,7 @@ Here are the most important options:
 - `--display-card`: Display detected cards on the output.
 - `--deck-list`: Path to a ydk file containing the list of cards in your deck for better recognition.
 - `--fps`: FPS of the saved video (default is 60).
+- `--language`: Select the language to display the cards names among EN (default), FR, IT, DE, and PT.
 
 ---
 
