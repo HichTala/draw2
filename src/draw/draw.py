@@ -11,6 +11,16 @@ from huggingface_hub import hf_hub_download
 if sys.platform == 'win32':
     os.add_dll_directory(sys.prefix)
 
+    from datasets import disable_progress_bar as disable_dataset_progress_bar, \
+        disable_progress_bars as disable_dataset_progress_bars
+    from transformers.utils.logging import disable_progress_bar as disable_transformers_progress_bar
+    from huggingface_hub.utils import disable_progress_bars
+
+    disable_dataset_progress_bar()
+    disable_dataset_progress_bars()
+    disable_transformers_progress_bar()
+    disable_progress_bars()
+
 import cv2
 from transformers import AutoImageProcessor, pipeline
 from ultralytics import YOLO
