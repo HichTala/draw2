@@ -5,7 +5,7 @@
 
 <div>
 
-[![Web Interface](https://img.shields.io/badge/🌐_Web_Interface-Try_It_Now-blue)](https://hichtala.github.io/draw2)
+[![Web Demo](https://img.shields.io/badge/🌐_Web_Demo-Try_It_Now-blue)](https://hichtala.github.io/draw2)
 
 [![Licence](https://img.shields.io/pypi/l/ultralytics)](../LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/HichTala/draw2?logoColor=%23181717)](https://github.com/HichTala/draw2)
@@ -22,7 +22,7 @@
 </div>
 
 > 🌐 **DRAW 2 を手軽に試してみたいですか？**  
-> 公式の **[Web インターフェース](https://hichtala.github.io/draw2)** をぜひお試しください。インストールや技術的な設定は一切不要です！
+> 公式の **[Web デモ](https://hichtala.github.io/draw2)** をぜひお試しください。インストール不要です！
 
 
 遊戯王のカードを画像やデュエル映像から自動で見つけて認識するAIツールです。前のバージョンから精度や安定性、使いやすさを大幅にパワーアップさせました！さらに、[OBSプラグインにも対応しているので](https://github.com/HichTala/draw2-plugin)、プログラミングの知識がなくても簡単にライブ配信や動画編集に組み込むことができます。リアルタイムでカードを検出して画面に表示することも可能です。

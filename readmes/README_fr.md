@@ -6,7 +6,7 @@
 
 <div>
 
-[![Web Interface](https://img.shields.io/badge/🌐_Web_Interface-Try_It_Now-blue)](https://hichtala.github.io/draw2)
+[![Web Demo](https://img.shields.io/badge/🌐_Web_Demo-Try_It_Now-blue)](https://hichtala.github.io/draw2)
 
 [![Licence](https://img.shields.io/pypi/l/ultralytics)](../LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/HichTala/draw2?logoColor=%23181717)](https://github.com/HichTala/draw2)
@@ -23,7 +23,7 @@
 </div>
 
 > 🌐 **Vous cherchez un moyen simple d'essayer DRAW 2 ?**  
-> Découvrez notre **[interface Web](https://hichtala.github.io/draw2)** officielle — aucune installation ni configuration technique n'est nécessaire !
+> Découvrez notre **[démo Web](https://hichtala.github.io/draw2)** officielle. Pas besoin d'installation !
 
 
 DRAW est le tout premier détecteur d'objets entraîné à détecter les cartes Yu-Gi-Oh! dans tous types d'images,

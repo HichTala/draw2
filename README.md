@@ -6,7 +6,7 @@
 
 <div>
 
-[![Web Interface](https://img.shields.io/badge/🌐_Web_Interface-Try_It_Now-blue)](https://hichtala.github.io/draw2)
+[![Web Demo](https://img.shields.io/badge/🌐_Web_Demo-Try_It_Now-blue)](https://hichtala.github.io/draw2)
 
 [![Licence](https://img.shields.io/pypi/l/ultralytics)](LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/HichTala/draw2?logoColor=%23181717)](https://github.com/HichTala/draw2)
@@ -24,7 +24,7 @@
 </div>
 
 > 🌐 **Looking for a user-friendly way to try DRAW 2?**  
-> Check out our official **[Web Interface](https://hichtala.github.io/draw2)** — no installation or technical setup required!
+> Check out our official **[Web Demo](https://hichtala.github.io/draw2)**. No installation required!
 
 DRAW 2 (which stands for **D**etect and **R**ecognize **A** **W**ide range of cards version 2) is an object detector
 trained to detect _Yu-Gi-Oh!_ cards in all types of images, and in particular in dueling images.
