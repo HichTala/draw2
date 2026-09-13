@@ -66,5 +66,7 @@
   "runtime.live_detect": "ライブ検出",
   "runtime.stop_detecting": "検出を停止",
   "runtime.download_gif": "GIFをダウンロード",
+  "runtime.encoding_gif": "GIFをエンコード中...",
+  "runtime.export_gif": "GIFを書き出す",
   "runtime.model_downloaded": "モデル {model} をダウンロードしました"
 }

@@ -69,6 +69,8 @@
   "runtime.live_detect": "Détection en direct",
   "runtime.stop_detecting": "Arrêter la détection",
   "runtime.download_gif": "Télécharger le GIF",
+  "runtime.encoding_gif": "Encodage du GIF...",
+  "runtime.export_gif": "Exporter en GIF",
   "runtime.model_downloaded": "Modèle {model} téléchargé",
   "log.found_cards": "{count} carte(s) trouvée(s)",
   "log.card_progress": "Carte {idx}/{total} : \"{name}\" ({pct} %)",

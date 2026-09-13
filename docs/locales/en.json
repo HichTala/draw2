@@ -69,6 +69,8 @@
   "runtime.live_detect": "Live Detect",
   "runtime.stop_detecting": "Stop Detecting",
   "runtime.download_gif": "Download GIF",
+  "runtime.encoding_gif": "Encoding GIF...",
+  "runtime.export_gif": "Export GIF",
   "runtime.model_downloaded": "Model {model} downloaded",
   "log.found_cards": "Found {count} card(s)",
   "log.card_progress": "Card {idx}/{total}: \"{name}\" ({pct}%)",

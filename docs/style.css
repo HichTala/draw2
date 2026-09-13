@@ -46,6 +46,9 @@ html.dark .glass-bento {
 .btn:active {
   transform: scale(0.97);
 }
+/* Purging the cache is destructive: never let it look like the load button. */
+.btn-danger { background: #dc2626 !important; color: #fff !important; }
+.btn-danger:hover { background: #b91c1c !important; }
 
 /* Staggered Entrance */
 .stagger-item {

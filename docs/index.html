@@ -312,6 +312,7 @@
 
   <div id="fullscreen-viewer" hidden class="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 cursor-zoom-out">
     <img id="fullscreen-viewer-img" class="max-w-full max-h-full object-contain rounded-xl shadow-2xl cursor-default" data-i18n-attr="alt:demo.fullscreen_alt" alt="Detection result, enlarged">
+    <canvas id="fullscreen-viewer-canvas" style="display:none" class="max-w-full max-h-full object-contain rounded-xl shadow-2xl cursor-default"></canvas>
     <button id="btn-fullscreen-close" data-i18n-attr="title:demo.fullscreen_close_title" title="Close" class="btn absolute top-4 right-4 sm:top-6 sm:right-6 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
     </button>
