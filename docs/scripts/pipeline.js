@@ -163,7 +163,8 @@ function cardArtUrl(index) {
     const label = typeof entry === "string" ? entry : entry?.label;
     const id = label?.match(/-(\d+)$/)?.[1];
     if (!label || !id) return null;
-    return `${ART_BUCKET}/${encodeURIComponent(label)}/${id}.jpg`;
+    const path = label.replace(/^([A-Za-z]):/, "$1");
+    return `${ART_BUCKET}/${encodeURIComponent(path)}/${id}.jpg`;
 }
 
 // The bucket is slow and sends no Cache-Control, so each artwork is fetched
