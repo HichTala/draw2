@@ -27,10 +27,10 @@ def parse_command_line():
 if __name__ == '__main__':
     args = parse_command_line()
     run(
-        model_size=0,
-        deck_list="",
-        minimum_out_of_screen_time=25,
-        minimum_screen_time=6,
-        confidence_threshold=5,
-        channel=1
+        model_size=args.model_size,
+        deck_list=args.deck_list,
+        minimum_out_of_screen_time=args.minimum_out_of_screen_time,
+        minimum_screen_time=args.minimum_screen_time,
+        confidence_threshold=args.confidence_threshold,
+        channel=args.channel
     )
