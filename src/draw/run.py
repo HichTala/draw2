@@ -34,8 +34,8 @@ if sys.platform == 'win32':
 
     logging.info("Python subprocess started")
 
-OBS_SHM_NAME = "obs_shared_memory"
-PYTHON_SHM_NAME = "python_shared_memory"
+OBS_SHM_NAME = "/obs_shared_memory"
+PYTHON_SHM_NAME = "/python_shared_memory"
 HEADER_FORMAT = "II"
 HEADER_SIZE = struct.calcsize(HEADER_FORMAT)
 
@@ -48,12 +48,22 @@ SIZE = HEADER_SIZE + FRAME_BUFFER_SIZE
 
 
 class DrawSharedMemoryHandler:
-    def __init__(self, model_id="HichTala/draw2", deck_list="", minimum_out_of_screen_time=25, minimum_screen_time=6, confidence_threshold=5):
-        self.draw = Draw(model=model_id, deck_lists=get_deck_list(deck_list), confidence_threshold=confidence_threshold)
+    def __init__(
+            self,
+            model_id="HichTala/draw2",
+            deck_list="",
+            minimum_out_of_screen_time=25,
+            minimum_screen_time=6,
+            confidence_threshold=5,
+            channel=1
+    ):
+        self.draw = Draw(model=model_id, deck_lists=get_deck_list(deck_list), confidence_threshold=confidence_threshold
+    )
 
         self.obs_shm = None
         self.python_shm = None
         self.shm_array = None
+        self.channel = channel
 
         self.minimum_out_of_screen_time = minimum_out_of_screen_time
         self.minimum_screen_time = minimum_screen_time
@@ -66,38 +76,30 @@ class DrawSharedMemoryHandler:
 
         self.waiting = True
 
-    def __call__(self, address=None, ready_ptr=None):
-        continue_execution = True if address is None else address.contents.value
-        if ready_ptr is not None:
-            ready_ptr.contents.value = True
-
+    def __call__(self):
         print(f"Waiting for OBS to start...")
-        while continue_execution:
-            continue_execution = True if address is None else address.contents.value
+        while True:
             try:
                 if sys.platform == 'win32':
-                    self.obs_shm = mmap.mmap(-1, SIZE, tagname=OBS_SHM_NAME, access=mmap.ACCESS_READ)
+                    self.obs_shm = mmap.mmap(-1, SIZE, tagname=f"{OBS_SHM_NAME}_{self.channel}", access=mmap.ACCESS_READ)
                     print("mapped size:", self.obs_shm.size())
                 else:
-                    self.obs_shm = shared_memory.SharedMemory(name=OBS_SHM_NAME)
+                    self.obs_shm = shared_memory.SharedMemory(name=f"{OBS_SHM_NAME}_{self.channel}")
                     print("mapped size:", self.obs_shm.size)
             except (FileNotFoundError, ValueError, OSError):
                 continue
             except KeyboardInterrupt:
                 return
             break
-        if not continue_execution:
-            print("OBS stopped before it could start.")
-            return
 
         print(f"Shared memory found")
         if sys.platform == 'win32':
             obs_buf = memoryview(self.obs_shm)
         else:
             obs_buf = memoryview(self.obs_shm.buf)
-        while continue_execution:
+
+        while True:
             try:
-                continue_execution = True if address is None else address.contents.value
                 image = read_shared_frame(obs_buf, HEADER_SIZE, HEADER_FORMAT)
             except TypeError as e:
                 print("type error: ", e)
@@ -160,7 +162,7 @@ class DrawSharedMemoryHandler:
         if sys.platform == 'win32' and (self.python_shm is None or total_size != self.python_shm.size()):
             if self.python_shm is not None:
                 self.python_shm.close()
-            self.python_shm = mmap.mmap(-1, total_size, tagname=PYTHON_SHM_NAME, access=mmap.ACCESS_WRITE)
+            self.python_shm = mmap.mmap(-1, total_size, tagname=f"{PYTHON_SHM_NAME}_{self.channel}", access=mmap.ACCESS_WRITE)
             self.python_shm.seek(0)
             self.python_shm.write(b"\x00" * total_size)
             python_buf = memoryview(self.python_shm)
@@ -170,7 +172,7 @@ class DrawSharedMemoryHandler:
             if self.python_shm is not None:
                 self.python_shm.close()
                 self.python_shm.unlink()
-            self.python_shm = shared_memory.SharedMemory(name=PYTHON_SHM_NAME, create=True, size=total_size)
+            self.python_shm = shared_memory.SharedMemory(name=f"{PYTHON_SHM_NAME}_{self.channel}", create=True, size=total_size)
             self.shm_array = np.ndarray((height, width, channels), dtype=np.uint8,
                                         buffer=self.python_shm.buf[HEADER_SIZE:])
             self.python_shm.buf[:HEADER_SIZE] = struct.pack(HEADER_FORMAT, width, height)
@@ -190,45 +192,24 @@ def close_shared_memory(shm):
 
 
 def run(
-        stop_flag=None,
-        model_ready=None,
-        update_flag=None,
         model_size=0,
         deck_list="",
         minimum_out_of_screen_time=25,
         minimum_screen_time=6,
-        confidence_threshold=5
+        confidence_threshold=5,
+        channel=1
 ):
     print("Starting Draw2...")
-    if stop_flag is not None and model_ready is not None and update_flag is not None:
-        addr = ctypes.cast(ctypes.pythonapi.PyCapsule_GetPointer(stop_flag, b"stop_flag"),
-                           ctypes.POINTER(ctypes.c_bool))
-        ready_ptr = ctypes.cast(ctypes.pythonapi.PyCapsule_GetPointer(model_ready, b"model_ready"),
-                                ctypes.POINTER(ctypes.c_bool))
-        update_ptr = ctypes.cast(ctypes.pythonapi.PyCapsule_GetPointer(update_flag, b"update_flag"),
-                                ctypes.POINTER(ctypes.c_bool))
 
-        update_ptr.contents.value = True
-        sh_memory_handler = DrawSharedMemoryHandler(
-            model_id=["HichTala/draw2", "HichTala/draw2-large"][model_size],
-            deck_list=deck_list,
-            minimum_out_of_screen_time=minimum_out_of_screen_time,
-            minimum_screen_time=minimum_screen_time,
-            confidence_threshold=confidence_threshold
-        )
-        update_ptr.contents.value = False
-
-        print("Running Draw2 with OBS shared memory")
-        sh_memory_handler(address=addr, ready_ptr=ready_ptr)
-    else:
-        sh_memory_handler = DrawSharedMemoryHandler(
-            deck_list=deck_list,
-            minimum_out_of_screen_time=minimum_out_of_screen_time,
-            minimum_screen_time=minimum_screen_time,
-            confidence_threshold=confidence_threshold
-        )
-        print("Running Draw2 without OBS shared memory")
-        sh_memory_handler()
+    sh_memory_handler = DrawSharedMemoryHandler(
+        model_id=["HichTala/draw2", "HichTala/draw2-large"][model_size],
+        deck_list=deck_list,
+        minimum_out_of_screen_time=minimum_out_of_screen_time,
+        minimum_screen_time=minimum_screen_time,
+        confidence_threshold=confidence_threshold,
+        channel=channel
+    )
+    sh_memory_handler()
 
     close_shared_memory(sh_memory_handler.obs_shm)
     close_shared_memory(sh_memory_handler.python_shm)
