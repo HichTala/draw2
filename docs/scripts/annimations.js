@@ -24,21 +24,28 @@ renderer.setPixelRatio(window.devicePixelRatio); container.appendChild(renderer.
 const onResize = () => { renderer.setSize(container.clientWidth, container.clientHeight); material.uniforms.resolution.value.x = renderer.domElement.width; material.uniforms.resolution.value.y = renderer.domElement.height; };
 onResize(); window.addEventListener("resize", onResize);
 
-// Pause animation when tab is hidden or inference is running
+// Pause animation when tab is hidden, inference is running, or the user said so
+const BG_PREF_KEY = "draw2_bg_anim";
 let rafId = null;
 let inferencePaused = false;
+let userOff = false;
+try { userOff = localStorage.getItem(BG_PREF_KEY) === "off"; } catch {}
 const animate = () => {
     rafId = requestAnimationFrame(animate);
     material.uniforms.time.value += 0.03;
     renderer.render(scene, camera);
 };
 function syncAnimation() {
-    const shouldRun = !document.hidden && !inferencePaused;
+    const shouldRun = !document.hidden && !inferencePaused && !userOff;
     if (shouldRun && !rafId) animate();
     if (!shouldRun && rafId) { cancelAnimationFrame(rafId); rafId = null; }
 }
+function applyUserPref() {
+    container.style.display = userOff ? "none" : "";
+    syncAnimation();
+}
 renderer.render(scene, camera); // paint one frame immediately either way
-syncAnimation();
+applyUserPref();
 document.addEventListener("visibilitychange", syncAnimation);
 
 // pipeline.js calls this around inference; it knows nothing about Three.js.
@@ -49,5 +56,11 @@ window.__bgAnim = {
         material.uniforms.time.value = 1.0; // reset to frame 1, not a mid-motion freeze
         renderer.render(scene, camera);
     },
-    resume() { inferencePaused = false; syncAnimation(); }
+    resume() { inferencePaused = false; syncAnimation(); },
+    isEnabled() { return !userOff; },
+    setEnabled(on) {
+        userOff = !on;
+        try { localStorage.setItem(BG_PREF_KEY, on ? "on" : "off"); } catch {}
+        applyUserPref();
+    }
 };

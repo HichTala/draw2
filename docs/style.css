@@ -172,3 +172,16 @@ html.dark ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3)
 [hidden] {
   display: none !important;
 }
+
+/* Header bubbles: an ambient shadow and a pressed state, no highlight. The
+   hover rules exist only because .glass-bento:hover puts back a hard white
+   line on the top edge. Offsets stay small and blurs wide, otherwise the
+   shadow reads as a second disc stacked under the circle. */
+.relief { box-shadow: 0 6px 22px rgba(0, 0, 0, 0.07); }
+html.dark .relief { box-shadow: 0 6px 22px rgba(0, 0, 0, 0.38); }
+
+.relief:hover { box-shadow: 0 10px 30px rgba(0, 0, 0, 0.10); }
+html.dark .relief:hover { box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); }
+
+.relief:active { box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.14), 0 1px 4px rgba(0, 0, 0, 0.06); }
+html.dark .relief:active { box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.45), 0 1px 4px rgba(0, 0, 0, 0.3); }

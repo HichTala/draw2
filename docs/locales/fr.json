@@ -1,6 +1,7 @@
 {
   "nav.github_title": "Voir sur GitHub",
   "nav.live_demo": "Démo",
+  "nav.bg_title": "Activer ou couper l'animation de fond",
   "nav.lang_title": "Changer de langue",
   "hero.title": "Un détecteur de cartes Yu-Gi-Oh! en temps réel.",
   "hero.desc": "DRAW2 s'appuie sur une architecture de modèles de pointe, entraînée sur plus de 13 000 cartes. Il les reconnaît automatiquement en conditions réelles de duel, ce qu'aucun autre système ne fait aujourd'hui avec autant de précision.<br><br>Essayez la démo ci-dessous pour exécuter le modèle sur votre propre machine en temps réel. Rien n'est envoyé ni stocké de notre côté.",

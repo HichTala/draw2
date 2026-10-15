@@ -1,6 +1,7 @@
 {
   "nav.github_title": "View on GitHub",
   "nav.live_demo": "Live Demo",
+  "nav.bg_title": "Toggle background animation",
   "nav.lang_title": "Change language",
   "hero.title": "Detect Yu-Gi-Oh! cards in real-time.",
   "hero.desc": "DRAW2 uses a state-of-the-art model architecture trained on 13,000+ cards. It recognizes them automatically under real dueling conditions, something no prior system does at this scale currently.<br><br>Try the demo below to run the model on your own machine in real time. Nothing is uploaded or stored by us.",
