@@ -40,7 +40,7 @@ Le plugin peut afficher les cartes détectées en temps réel pour une expérien
 D'autres travaux existent (voir [Projets connexes](#projets-connexes)) mais aucun n'est capable de
 reconnaître des cartes pendant un duel.
 
-Ce projet est sous licence [GNU Affero General Public License v3.0](../LICENCE) ; toutes les contributions sont les
+Ce projet est sous licence [GNU Affero General Public License v3.0](../LICENSE) ; toutes les contributions sont les
 bienvenues.
 
 ---
