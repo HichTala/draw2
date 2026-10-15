@@ -3,7 +3,7 @@
   "nav.live_demo": "Live Demo",
   "nav.lang_title": "Change language",
   "hero.title": "Detect Yu-Gi-Oh! cards in real-time.",
-  "hero.desc": "DRAW2 uses a state-of-the-art model architecture trained on 13,000+ cards. It recognizes them automatically under real dueling conditions, something no prior system does at this scale currently.<br><br>Try the demo below to run the model on your own machine in real time. Nothing is uploaded or stored by us.",
+  "hero.desc": "DRAW2 uses a state-of-the-art model architecture trained on 13,000+ cards. It&nbsp;recognizes&nbsp;them automatically under real dueling conditions, something no prior system does at this scale currently.<br><br>Try the demo below to run the model on your own machine in real time. Nothing&nbsp;is&nbsp;uploaded or stored by us.",
   "hero.cta_try": "Try it now!",
   "hero.cta_contact": "Get in Touch",
   "hero.cta_streamer": "Streamer? Get the OBS plugin →",
@@ -85,5 +85,18 @@
   "log.rendering_frames": "Rendering {count} frame(s)...",
   "log.frame_rendering_done": "Frame rendering done",
   "log.encoding_gif": "Encoding output GIF...",
-  "log.gif_ready": "GIF ready ({size} KB)"
+  "log.gif_ready": "GIF ready ({size} KB)",
+  "runtime.detecting_cards": "Detecting cards......",
+  "runtime.classifying_card": "Classifying card...",
+  "runtime.classifying_cards": "Classifying cards...",
+  "runtime.loading_encoder": "Loading GIF encoder...",
+  "runtime.extracting": "Extracting frames...",
+  "runtime.extracting_n": "Extracting frames ({i}/{total})...",
+  "runtime.analyzing_frame": "Analyzing key frame {i}/{total}...",
+  "alert.webcam_denied": "Webcam access denied or unavailable.",
+  "alert.live_needs_model": "Live detection needs the Medium or Max model for smooth results. Switch precision and reload the engine to use it.",
+  "alert.clip_too_long": "Please use a short clip (under 15s) for this in-browser demo.",
+  "alert.gif_unsupported": "Your browser doesn't support GIF frame extraction (use Chrome or Edge).",
+  "demo.no_cards_found": "No cards found above confidence threshold ({pct}%). Try a clearer image.",
+  "demo.error_prefix": "Error"
 }

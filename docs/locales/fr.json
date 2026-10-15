@@ -3,7 +3,7 @@
   "nav.live_demo": "Démo",
   "nav.lang_title": "Changer de langue",
   "hero.title": "Un détecteur de cartes Yu-Gi-Oh! en temps réel.",
-  "hero.desc": "DRAW2 s'appuie sur une architecture de modèles de pointe, entraînée sur plus de 13 000 cartes. Il les reconnaît automatiquement en conditions réelles de duel, ce qu'aucun autre système ne fait aujourd'hui avec autant de précision.<br><br>Essayez la démo ci-dessous pour exécuter le modèle sur votre propre machine en temps réel. Rien n'est envoyé ni stocké de notre côté.",
+  "hero.desc": "DRAW2 s'appuie sur une architecture de modèles de pointe, entraînée sur plus de 13 000 cartes. Il&nbsp;les&nbsp;reconnaît automatiquement en conditions réelles de duel, ce qu'aucun autre système ne fait aujourd'hui avec autant de précision.<br><br>Essayez la démo ci-dessous pour exécuter le modèle sur votre propre machine en temps réel. Rien&nbsp;n'est&nbsp;envoyé ni stocké de notre côté.",
   "hero.cta_try": "Essayer la démo",
   "hero.cta_contact": "Nous contacter",
   "hero.cta_streamer": "Streamer ? Récupérez le plugin OBS →",
@@ -85,5 +85,18 @@
   "log.rendering_frames": "Rendu de {count} frame(s)...",
   "log.frame_rendering_done": "Rendu des frames terminé",
   "log.encoding_gif": "Encodage du GIF...",
-  "log.gif_ready": "GIF prêt ({size} Ko)"
+  "log.gif_ready": "GIF prêt ({size} Ko)",
+  "runtime.detecting_cards": "Détection des cartes......",
+  "runtime.classifying_card": "Classification de la carte...",
+  "runtime.classifying_cards": "Classification des cartes...",
+  "runtime.loading_encoder": "Chargement de l'encodeur GIF...",
+  "runtime.extracting": "Extraction des images...",
+  "runtime.extracting_n": "Extraction des images ({i}/{total})...",
+  "runtime.analyzing_frame": "Analyse de l'image clé {i}/{total}...",
+  "alert.webcam_denied": "Accès à la webcam refusé ou indisponible.",
+  "alert.live_needs_model": "La détection en direct demande le modèle Medium ou Max pour être fluide. Changez de précision et rechargez le moteur.",
+  "alert.clip_too_long": "Utilisez un extrait court, moins de 15 secondes, pour cette démo dans le navigateur.",
+  "alert.gif_unsupported": "Votre navigateur ne gère pas l'extraction des images d'un GIF. Utilisez Chrome ou Edge.",
+  "demo.no_cards_found": "Aucune carte trouvée au-dessus du seuil de confiance ({pct} %). Essayez une image plus nette.",
+  "demo.error_prefix": "Erreur"
 }

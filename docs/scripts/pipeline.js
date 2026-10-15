@@ -1350,7 +1350,7 @@ async function detectAndClassify(imageData, { showSteps = true, onDetections, on
 
     if (cancelRequested) throw new Error("Cancelled by user");
 
-    setRunLabel("Detecting cards......");
+    setRunLabel(T("runtime.detecting_cards"));
     const steps = showSteps ? createSteps(["YOLO - object detection", "Warping card crops"]) : [];
     if (showSteps) { stepActive(steps[0]); await nextFrame(); }
 
@@ -1377,7 +1377,7 @@ async function detectAndClassify(imageData, { showSteps = true, onDetections, on
         return { detections: [], allPredictions: [], croppedImages: [] };
     }
 
-    setRunLabel(`Classifying card${detections.length>1?"s":""}...`);
+    setRunLabel(T(detections.length > 1 ? "runtime.classifying_cards" : "runtime.classifying_card"));
     if (showSteps) stepActive(steps[1]);
     const vitSteps = detections.map((_, i) => {
         if (!showSteps) return null;
@@ -1469,7 +1469,7 @@ async function runPipeline(imageData) {
         if (detections.length === 0) {
             if (runRow) runRow.hidden = true;
             if (canvasOut) drawOverlayLetterboxed(canvasOut, imageData, [], []);
-            if (grid) grid.innerHTML = `<p style="grid-column:1/-1;color:var(--muted);font-size:.875rem;">No cards found above confidence threshold (${CONF_THRESH*100}%). Try a clearer image.</p>`;
+            if (grid) grid.innerHTML = `<p style="grid-column:1/-1;color:var(--muted);font-size:.875rem;">${T("demo.no_cards_found", { pct: CONF_THRESH * 100 })}</p>`;
             if (resultsEl) resultsEl.hidden = false;
             return;
         }
@@ -1496,7 +1496,7 @@ async function runPipeline(imageData) {
         const resultsEl = $("results");
         if (runRow) runRow.hidden = true;
         setRunLabel("");
-        if (grid) grid.innerHTML = `<p style="grid-column:1/-1;color:var(--danger);font-size:.875rem;">Error: ${err.message}</p>`;
+        if (grid) grid.innerHTML = `<p style="grid-column:1/-1;color:var(--danger);font-size:.875rem;">${T("demo.error_prefix")}: ${err.message}</p>`;
         if (resultsEl) resultsEl.hidden = false;
     } finally {
         window.__bgAnim?.resume();
@@ -1774,7 +1774,7 @@ function setupWebcam() {
             if ($("results")) $("results").hidden = true;
             $("gif-dl")?.remove();
             if (wrap) wrap.hidden = false;
-        } catch { alert("Webcam access denied or unavailable."); }
+        } catch { alert(T("alert.webcam_denied")); }
     });
 
     if (btnLive) btnLive.addEventListener("click", () => {
@@ -1784,7 +1784,7 @@ function setupWebcam() {
             return;
         }
         if (currentPrecision !== "fp32" && currentPrecision !== "fp16") {
-            alert("Live detection needs the Medium or Max model for smooth results. Switch precision and reload the engine to use it.");
+            alert(T("alert.live_needs_model"));
             return;
         }
         liveActive = true;
@@ -2020,7 +2020,7 @@ async function processAnimated(file) {
     try {
 
     if (!window.GIF) {
-        setRunLabel("Loading GIF encoder...");
+        setRunLabel(T("runtime.loading_encoder"));
         status(T("log.loading_gif_encoder"));
         await new Promise(r => {
             const s = document.createElement("script");
@@ -2030,7 +2030,7 @@ async function processAnimated(file) {
         });
     }
 
-    setRunLabel("Extracting frames...");
+    setRunLabel(T("runtime.extracting"));
 
     // Extraction takes seconds; show frame 0 as soon as it exists so the
     // capsule is filled at the right size immediately, like a still image.
@@ -2047,7 +2047,7 @@ async function processAnimated(file) {
         video.muted = true;
         await new Promise((r, reject) => { video.onloadeddata = r; video.onerror = reject; });
         if (video.duration > 15) {
-            alert("Please use a short clip (under 15s) for this in-browser demo.");
+            alert(T("alert.clip_too_long"));
             if (runRow) runRow.hidden = true;
             if ($("canvas-wrap")) $("canvas-wrap").hidden = true;
             resetUI();
@@ -2068,14 +2068,14 @@ async function processAnimated(file) {
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
             frames.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
             previewFirstFrame();
-            setRunLabel(`Extracting frames (${i+1}/${totalFrames})...`);
+            setRunLabel(T("runtime.extracting_n", { i: i + 1, total: totalFrames }));
             dbgProgress("extract", "Extracting frames", i + 1, totalFrames);
         }
         dbgProgressDone("extract");
         status(T("log.extraction_done", { count: frames.length }));
     } else if (file.type === "image/gif") {
         if (!window.ImageDecoder) {
-            alert("Your browser doesn't support GIF frame extraction (use Chrome or Edge).");
+            alert(T("alert.gif_unsupported"));
             if (runRow) runRow.hidden = true;
             if ($("canvas-wrap")) $("canvas-wrap").hidden = true;
             resetUI();
@@ -2102,7 +2102,7 @@ async function processAnimated(file) {
             frames.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
             vf.close();
             previewFirstFrame();
-            setRunLabel(`Extracting frames (${i+1}/${frameCount})...`);
+            setRunLabel(T("runtime.extracting_n", { i: i + 1, total: frameCount }));
             dbgProgress("extract", "Extracting frames", i + 1, frameCount);
         }
         dbgProgressDone("extract");
@@ -2122,7 +2122,7 @@ async function processAnimated(file) {
     for (let k = 0; k < keyIndices.length; k++) {
         if (cancelRequested) break;
         const idx = keyIndices[k];
-        setRunLabel(`Analyzing key frame ${k+1}/${keyIndices.length}...`);
+        setRunLabel(T("runtime.analyzing_frame", { i: k + 1, total: keyIndices.length }));
         const { detections, allPredictions, croppedImages } = await detectAndClassify(frames[idx], { showSteps: false });
         keyResults.set(idx, { detections, allPredictions });
         allPredictions.forEach((list, j) => {
@@ -2171,7 +2171,7 @@ async function processAnimated(file) {
     const player = startClipPlayer(canvasOut, playbackVideo || frames, keyResults, nearestKey);
     frames.length = 0;
 
-    setRunLabel("Engine Ready");
+    setRunLabel(T("runtime.engine_ready"));
     if (runRow) runRow.hidden = true;
 
     const DL_CLASS = "absolute bottom-4 right-4 px-4 py-2 rounded-lg font-bold text-xs shadow-lg z-50 text-white";

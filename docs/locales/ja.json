@@ -68,5 +68,18 @@
   "runtime.download_gif": "GIFをダウンロード",
   "runtime.encoding_gif": "GIFをエンコード中...",
   "runtime.export_gif": "GIFを書き出す",
-  "runtime.model_downloaded": "モデル {model} をダウンロードしました"
+  "runtime.model_downloaded": "モデル {model} をダウンロードしました",
+  "runtime.detecting_cards": "カードを検出中……",
+  "runtime.classifying_card": "カードを分類中……",
+  "runtime.classifying_cards": "カードを分類中……",
+  "runtime.loading_encoder": "GIFエンコーダーを読み込み中……",
+  "runtime.extracting": "フレームを抽出中……",
+  "runtime.extracting_n": "フレームを抽出中（{i}/{total}）……",
+  "runtime.analyzing_frame": "キーフレームを解析中 {i}/{total}……",
+  "alert.webcam_denied": "カメラへのアクセスが拒否されたか、利用できません。",
+  "alert.live_needs_model": "ライブ検出には Medium または Max モデルが必要です。精度を切り替えてエンジンを再読み込みしてください。",
+  "alert.clip_too_long": "このブラウザ内デモでは 15 秒未満の短いクリップをご利用ください。",
+  "alert.gif_unsupported": "お使いのブラウザは GIF のフレーム抽出に対応していません（Chrome または Edge をご利用ください）。",
+  "demo.no_cards_found": "信頼度 {pct}% を超えるカードが見つかりませんでした。より鮮明な画像でお試しください。",
+  "demo.error_prefix": "エラー"
 }
