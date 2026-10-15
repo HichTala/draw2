@@ -15,7 +15,7 @@
 [![WandB](https://img.shields.io/badge/visualize_in-W%26B-yellow?logo=weightsandbiases&color=%23FFBE00)](https://wandb.ai/hich_/draw)
 [![Medium](https://img.shields.io/badge/-Medium-12100E?style=flat&logo=medium&labelColor=555)](https://medium.com/@hich.tala.phd/how-i-trained-again-my-model-to-detect-and-recognise-a-wide-range-of-yu-gi-oh-cards-5c567a320b0a)
 
-[🇬🇧 English](../README.md) | [🇫🇷 Français](README_fr.md)
+[🇬🇧 English](../README.md) | [🇫🇷 Français](README_fr.md) | [🇪🇸 Español](README_es.md)
 
 </div>
 
