@@ -1,4 +1,3 @@
-import ctypes
 import struct
 import time
 from collections import deque
@@ -9,9 +8,7 @@ import numpy as np
 from draw.draw import Draw
 from draw.utils import read_shared_frame, get_deck_list
 
-import os
 import sys
-import logging
 
 OBS_SHM_NAME = "/obs_shared_memory"
 PYTHON_SHM_NAME = "/python_shared_memory"
@@ -90,7 +87,6 @@ class DrawSharedMemoryHandler:
                 print("Stopping Draw2...")
                 close_shared_memory(self.obs_shm)
                 close_shared_memory(self.python_shm)
-                log_file.close()
                 return
 
             if image.size[0] == 0 or image.size[1] == 0:
@@ -112,7 +108,6 @@ class DrawSharedMemoryHandler:
                 print("Stopping Draw2...")
                 close_shared_memory(self.obs_shm)
                 close_shared_memory(self.python_shm)
-                log_file.close()
                 return
 
     def display_card(self, outputs):
