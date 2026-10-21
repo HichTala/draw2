@@ -7,6 +7,7 @@ import numpy as np
 
 from draw.draw import Draw
 from draw.utils import read_shared_frame, get_deck_list
+from draw.card_info import CardInfoEmitter
 
 import sys
 
@@ -51,6 +52,9 @@ class DrawSharedMemoryHandler:
         self.confidence_threshold = confidence_threshold
 
         self.waiting = True
+
+        # Opt-in structured card-info export (no-op unless DRAW2_CARD_INFO_DIR set).
+        self.card_info = CardInfoEmitter.from_env(self.channel, self.minimum_out_of_screen_time)
 
     def __call__(self):
         print(f"Waiting for OBS to start...")
@@ -103,6 +107,11 @@ class DrawSharedMemoryHandler:
                 for result in results:
                     outputs = self.draw.process(result)
                     self.display_card(outputs)
+                    if self.card_info is not None:
+                        try:
+                            self.card_info.update(outputs['predictions'])
+                        except Exception as exc:  # never break rendering
+                            print(f"[card_info] update failed: {exc}")
 
             except KeyboardInterrupt:
                 print("Stopping Draw2...")
