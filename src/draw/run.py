@@ -12,6 +12,14 @@ import sys
 
 OBS_SHM_NAME = "/obs_shared_memory"
 PYTHON_SHM_NAME = "/python_shared_memory"
+
+
+def posix_shm_name(name):
+    # SharedMemory already prepends "/" on POSIX, so we'd end up with
+    # "//obs_shared_memory_1". Linux doesn't care, macOS does.
+    return name.lstrip("/")
+
+
 HEADER_FORMAT = "II"
 HEADER_SIZE = struct.calcsize(HEADER_FORMAT)
 
@@ -60,7 +68,7 @@ class DrawSharedMemoryHandler:
                     self.obs_shm = mmap.mmap(-1, SIZE, tagname=f"{OBS_SHM_NAME}_{self.channel}", access=mmap.ACCESS_READ)
                     print("mapped size:", self.obs_shm.size())
                 else:
-                    self.obs_shm = shared_memory.SharedMemory(name=f"{OBS_SHM_NAME}_{self.channel}")
+                    self.obs_shm = shared_memory.SharedMemory(name=posix_shm_name(f"{OBS_SHM_NAME}_{self.channel}"))
                     print("mapped size:", self.obs_shm.size)
             except (FileNotFoundError, ValueError, OSError):
                 continue
@@ -146,7 +154,7 @@ class DrawSharedMemoryHandler:
             if self.python_shm is not None:
                 self.python_shm.close()
                 self.python_shm.unlink()
-            self.python_shm = shared_memory.SharedMemory(name=f"{PYTHON_SHM_NAME}_{self.channel}", create=True, size=total_size)
+            self.python_shm = shared_memory.SharedMemory(name=posix_shm_name(f"{PYTHON_SHM_NAME}_{self.channel}"), create=True, size=total_size)
             self.shm_array = np.ndarray((height, width, channels), dtype=np.uint8,
                                         buffer=self.python_shm.buf[HEADER_SIZE:])
             self.python_shm.buf[:HEADER_SIZE] = struct.pack(HEADER_FORMAT, width, height)
