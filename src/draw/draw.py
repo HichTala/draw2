@@ -110,7 +110,7 @@ class Draw:
 
                 rotation = utils.get_rotation(boxes=result.obb.xywhr[nbox], box_txt=box_txt)
                 if rotation is None:
-                    break
+                    continue
 
                 if rotation != 0:
                     roi = cv2.rotate(roi, rotation)
