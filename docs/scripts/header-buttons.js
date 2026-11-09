@@ -1,6 +1,30 @@
 document.getElementById('theme-toggle').addEventListener('click', () => {
   document.documentElement.classList.toggle('dark');
 });
+
+// The animation module is a deferred module, so it is not on window yet here:
+// read the stored preference directly for the initial icon.
+const bgToggle = document.getElementById('bg-toggle');
+if (bgToggle) {
+  const iconOn = document.getElementById('bg-icon-on');
+  const iconOff = document.getElementById('bg-icon-off');
+  const stored = (() => { try { return localStorage.getItem('draw2_bg_anim'); } catch { return null; } })();
+  let on = stored !== 'off';
+  const paint = () => {
+    iconOn.hidden = !on;
+    iconOff.hidden = on;
+    bgToggle.classList.toggle('bg-on', on);
+    bgToggle.classList.toggle('!bg-emerald-500', on);
+    bgToggle.classList.toggle('hover:!bg-emerald-400', on);
+    bgToggle.classList.toggle('!text-white', on);
+  };
+  paint();
+  bgToggle.addEventListener('click', () => {
+    on = !on;
+    window.__bgAnim?.setEnabled(on);
+    paint();
+  });
+}
 const langToggle = document.getElementById('lang-toggle');
 const langMenu = document.getElementById('lang-menu');
 function closeLangMenu() { langMenu.hidden = true; }

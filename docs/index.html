@@ -44,20 +44,24 @@
       <h1 class="text-3xl font-extrabold tracking-tighter">DRAW2</h1>
     </div>
     <div class="flex items-center gap-2 sm:gap-4">
-      <a href="https://github.com/HichTala/draw2" target="_blank" data-i18n-attr="title:nav.github_title" title="View on GitHub" class="btn glass-bento shrink-0 w-11 h-11 flex items-center justify-center rounded-full text-zinc-500 dark:text-white border !border-black/5 dark:!border-white/20">
+      <a href="https://github.com/HichTala/draw2" target="_blank" data-i18n-attr="title:nav.github_title" title="View on GitHub" class="relief btn glass-bento shrink-0 w-11 h-11 flex items-center justify-center rounded-full text-zinc-500 dark:text-white border !border-black/5 dark:!border-white/20">
         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.385-1.333-1.755-1.333-1.755-1.089-.744.083-.729.083-.729 1.205.084 1.84 1.236 1.84 1.236 1.07 1.835 2.807 1.305 3.492.998.108-.776.417-1.305.76-1.605-2.665-.303-5.466-1.332-5.466-5.93 0-1.31.468-2.38 1.235-3.22-.123-.303-.535-1.523.117-3.176 0 0 1.008-.322 3.3 1.23.96-.267 1.98-.4 3-.405 1.02.005 2.04.138 3 .405 2.29-1.552 3.297-1.23 3.297-1.23.653 1.653.24 2.873.117 3.176.77.84 1.233 1.91 1.233 3.22 0 4.61-2.807 5.625-5.48 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
       </a>
       <div class="relative">
-        <button id="lang-toggle" data-i18n-attr="title:nav.lang_title" title="Change language" class="btn glass-bento shrink-0 w-11 h-11 flex items-center justify-center rounded-full text-zinc-500 dark:text-white border !border-black/5 dark:!border-white/20 text-xs font-bold font-mono">
+        <button id="lang-toggle" data-i18n-attr="title:nav.lang_title" title="Change language" class="relief btn glass-bento shrink-0 w-11 h-11 flex items-center justify-center rounded-full text-zinc-500 dark:text-white border !border-black/5 dark:!border-white/20 text-[0.825rem] font-bold font-mono">
           <span id="lang-toggle-label">EN</span>
         </button>
         <div id="lang-menu" hidden class="glass-bento absolute right-0 top-14 z-50 min-w-[8rem] p-1.5 rounded-2xl border !border-black/5 dark:!border-white/20 flex flex-col gap-0.5"></div>
       </div>
-      <button id="theme-toggle" class="btn glass-bento shrink-0 w-11 h-11 flex items-center justify-center rounded-full text-zinc-500 dark:text-white border !border-black/5 dark:!border-white/20">
-        <svg class="w-4 h-4 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-        <svg class="w-4 h-4 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+      <button id="bg-toggle" data-i18n-attr="title:nav.bg_title" title="Toggle background animation" class="relief btn glass-bento shrink-0 w-11 h-11 flex items-center justify-center rounded-full text-zinc-500 dark:text-white border !border-black/5 dark:!border-white/20 bg-on !bg-emerald-500 hover:!bg-emerald-400 !text-white">
+        <svg id="bg-icon-on" class="w-[1.2rem] h-[1.2rem]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4l1.7 4.6L18.3 10l-4.6 1.4L12 16l-1.7-4.6L5.7 10l4.6-1.4z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M17.5 15l.6 1.6 1.6.6-1.6.6-.6 1.6-.6-1.6-1.6-.6 1.6-.6z"></path></svg>
+        <svg id="bg-icon-off" hidden class="w-[1.2rem] h-[1.2rem]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4l1.7 4.6L18.3 10l-4.6 1.4L12 16l-1.7-4.6L5.7 10l4.6-1.4z"></path><path stroke-linecap="round" d="M4.5 19.5L19.5 4.5"></path></svg>
       </button>
-      <a href="#demo" data-i18n="nav.live_demo" class="btn glass-bento hidden sm:inline-flex shrink-0 px-6 py-2.5 text-sm font-bold border !border-black/5 dark:!border-white/20 !rounded-full">Live Demo</a>
+      <button id="theme-toggle" class="relief btn glass-bento shrink-0 w-11 h-11 flex items-center justify-center rounded-full text-zinc-500 dark:text-white border !border-black/5 dark:!border-white/20">
+        <svg class="w-[1.1rem] h-[1.1rem] hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+        <svg class="w-[1.1rem] h-[1.1rem] block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+      </button>
+      <a href="#demo" data-i18n="nav.live_demo" class="relief btn glass-bento hidden sm:inline-flex shrink-0 px-6 py-2.5 text-sm font-bold border !border-black/5 dark:!border-white/20 !rounded-full">Live Demo</a>
     </div>
   </header>
   
