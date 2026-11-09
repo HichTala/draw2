@@ -1,7 +1,7 @@
 @charset "UTF-8";
 
 body {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Outfit', 'Noto Sans JP', sans-serif;
   margin: 0; overflow-x: hidden;
 }
 
@@ -165,8 +165,17 @@ html.dark ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3)
 }
 
 .font-display {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Outfit', 'Noto Sans JP', sans-serif;
 }
+
+/* Tight tracking and tight leading are set for latin headings. On japanese
+   they make the glyphs touch and the lines cramped. */
+p, h1, h2, h3 { text-wrap: pretty; }
+
+html[lang="ja"] .tracking-tighter,
+html[lang="ja"] .tracking-tight { letter-spacing: normal; }
+html[lang="ja"] .leading-tight { line-height: 1.3; }
+html[lang="ja"] .leading-relaxed { line-height: 1.65; }
 
 /* Force native hidden attribute over Tailwind utility classes */
 [hidden] {
