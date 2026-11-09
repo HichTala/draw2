@@ -94,8 +94,9 @@ class Draw:
                 box_txt, txt_aspect_ratio = utils.get_txt(contour)
 
                 rotation = utils.get_rotation(boxes=result.obb.xywhr[nbox], box_txt=box_txt)
+                # Skip only this card: `break` dropped every remaining card in the frame.
                 if rotation is None:
-                    break
+                    continue
 
                 if rotation != 0:
                     roi = cv2.rotate(roi, rotation)
