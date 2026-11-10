@@ -20,8 +20,36 @@ def download_file(url, destination):
         file.write(response.content)
 
 
+def camera_frames(index, width, height):
+    """Read frames from a webcam at the requested resolution.
+
+    Ultralytics opens webcams with OpenCV's default size (often 640x480).
+    Opening the camera here lets us ask for a higher resolution; the frames
+    are still resized for the detector, but the displayed/saved image and
+    the card crops keep the full resolution.
+    """
+    cap = cv2.VideoCapture(index)
+    if not cap.isOpened():
+        raise RuntimeError(f"Could not open camera {index}")
+    # Many webcams only reach high resolutions at a usable FPS with MJPG
+    cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+    actual = (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)))
+    if actual != (width, height):
+        print(f"Camera {index} does not support {width}x{height}, using {actual[0]}x{actual[1]}")
+    try:
+        while True:
+            ok, frame = cap.read()
+            if not ok:
+                break
+            yield frame
+    finally:
+        cap.release()
+
+
 class Draw:
-    def __init__(self, source, deck_lists=None, confidence_threshold=5):
+    def __init__(self, source, deck_lists=None, confidence_threshold=5, camera_resolution=None):
         self.decklist = []
         if deck_lists is not None:
             for deck_list in deck_lists:
@@ -38,14 +66,21 @@ class Draw:
             self.cardnames = json.load(f)
 
         model_regression = YOLO(yolo_path)
-        self.results = model_regression.predict(
-            source=source,
+        predict_args = dict(
             show_labels=False,
             save=False,
             device=self.device,
-            stream=True,
             verbose=False
         )
+        if camera_resolution is not None and str(source).isdigit():
+            frames = camera_frames(int(source), *camera_resolution)
+            self.results = (
+                result
+                for frame in frames
+                for result in model_regression.predict(source=frame, **predict_args)
+            )
+        else:
+            self.results = model_regression.predict(source=source, stream=True, **predict_args)
 
         image_processor = AutoImageProcessor.from_pretrained(
             "google/vit-base-patch16-224-in21k",
