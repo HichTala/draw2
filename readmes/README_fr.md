@@ -99,6 +99,7 @@ Les options les plus importantes sont les suivantes :
 - `--save`: Chemin où sauvegarder la vidéo.
 - `--save-images`: Pour sauvegarder les images et les photos des cartes détectées.
 - `--show`: Pour afficher la vidéo en temps réel.
+- `--camera-resolution`: Résolution demandée à la webcam, par exemple `1920x1080` (uniquement si `--source` est un index de webcam). La détection utilise toujours une copie réduite, mais la vidéo affichée et enregistrée garde cette résolution.
 - `--display-card`: Pour afficher l'image de la carte détectée.
 - `--deck-list`: Chemin vers un fichier ydk contenant la deck lists (permet d'améliorer la précision).
 - `--fps`: FPS de la vidéo à sauvegarder (par default, 60).

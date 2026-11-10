@@ -92,6 +92,7 @@ Here are the most important options:
 - `--save`: Save path for the output.
 - `--save-images`: Save the card images and photos of detected cards.
 - `--show`: Display the output in a window.
+- `--camera-resolution`: Resolution to request from the webcam, e.g. `1920x1080` (only when `--source` is a webcam index). Detection still runs on a resized copy, but the displayed and saved video keep this resolution.
 - `--display-card`: Display detected cards on the output.
 - `--deck-list`: Path to a ydk file containing the list of cards in your deck for better recognition.
 - `--fps`: FPS of the saved video (default is 60).
