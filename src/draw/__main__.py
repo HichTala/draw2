@@ -17,11 +17,23 @@ from draw.draw import Draw
 OpenCVImage = cv2.Mat | np.ndarray[Any, np.dtype]
 
 
+def parse_resolution(value):
+    try:
+        width, height = (int(v) for v in value.lower().split('x'))
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"invalid resolution '{value}', expected WIDTHxHEIGHT (e.g. 1920x1080)")
+    return width, height
+
+
 def parse_command_line():
     parser = argparse.ArgumentParser('Detecting and Recognizing a Wide Range of Yu-Gi-Oh! Cards', add_help=True)
 
     parser.add_argument('--source', default='0', type=str,
                         help="Source to use for processing refer to github.com/HichTala/draw2 for more details")
+
+    parser.add_argument('--camera-resolution', default=None, type=parse_resolution, metavar='WIDTHxHEIGHT',
+                        help="Resolution to request from the webcam, e.g. 1920x1080. Only used when --source is a "
+                             "webcam index. By default the webcam opens at OpenCV's default size (often 640x480).")
 
     parser.add_argument("--save", nargs="?", const="output",
                         help="Save the video. Optionally provide a path. If not, saves as 'output' in current dir.")
@@ -47,6 +59,8 @@ def parse_command_line():
 
 
 def show(im, p="draw2"):
+    # resizable window so high resolution frames fit on smaller screens
+    cv2.namedWindow(p, cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO)
     cv2.imshow(p, im)
     cv2.waitKey(1)  # 1 millisecond
 
@@ -186,7 +200,8 @@ def main(args):
 
     draw = Draw(
         source=args.source,
-        deck_lists=deck_list
+        deck_lists=deck_list,
+        camera_resolution=args.camera_resolution
     )
 
     is_image = False
@@ -203,7 +218,7 @@ def main(args):
         save_path = ".".join(args.save.split('.')[:-1]) if args.save.split(".")[-1] in video_types else "output"
 
         video_writer = cv2.VideoWriter(f'{save_path}.avi', fourcc, args.fps,
-                                       (first_frame.shape[0], first_frame.shape[1]))
+                                       (first_frame.shape[1], first_frame.shape[0]))  # (width, height)
 
     requires_detection_loop = bool(args.display_card or args.save_images)
     if requires_detection_loop:
